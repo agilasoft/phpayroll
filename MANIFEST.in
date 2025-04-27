@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include phpayroll *.css
+recursive-include phpayroll *.csv
+recursive-include phpayroll *.html
+recursive-include phpayroll *.ico
+recursive-include phpayroll *.js
+recursive-include phpayroll *.json
+recursive-include phpayroll *.md
+recursive-include phpayroll *.png
+recursive-include phpayroll *.py
+recursive-include phpayroll *.svg
+recursive-include phpayroll *.txt
+recursive-exclude phpayroll *.pyc
