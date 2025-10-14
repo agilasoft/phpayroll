@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2025-10-06 15:29:10.305076",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2025-10-06 15:29:14.510576",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "my-timelog",
+ "owner": "Administrator",
+ "page_name": "My Timelog",
+ "roles": [
+  {
+   "role": "Belizzo Staff"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 1,
+ "title": "My Timelog"
+}

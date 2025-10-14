@@ -1,0 +1,67 @@
+{
+ "actions": [],
+ "creation": "2024-05-23 11:17:02.635453",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "base_from",
+  "base_to",
+  "monthly_premium",
+  "rate",
+  "employee_share",
+  "employer_share"
+ ],
+ "fields": [
+  {
+   "fieldname": "base_from",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "From"
+  },
+  {
+   "fieldname": "base_to",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "To"
+  },
+  {
+   "columns": 1,
+   "fieldname": "monthly_premium",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Fixed"
+  },
+  {
+   "columns": 1,
+   "fieldname": "rate",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Rate"
+  },
+  {
+   "fieldname": "employee_share",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Employee Share"
+  },
+  {
+   "fieldname": "employer_share",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Employer Share"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-04-27 22:47:52.058041",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Philhealth Table Items",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

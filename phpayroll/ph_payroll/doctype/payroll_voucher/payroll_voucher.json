@@ -1,0 +1,376 @@
+{
+ "actions": [],
+ "autoname": "format:{employee} {date_to}",
+ "creation": "2024-02-22 01:48:22.359883",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "date_from",
+  "date_to",
+  "book",
+  "branch",
+  "column_break_4",
+  "basic_hours",
+  "hourly_rate",
+  "email",
+  "allow_incentive",
+  "section_break_8",
+  "items",
+  "section_break_10",
+  "total_basic_pay",
+  "total_overtime_pay",
+  "total_holiday_pay",
+  "total_incentive",
+  "taxable_income",
+  "column_break_14",
+  "deductions_column",
+  "tax",
+  "sss",
+  "philhealth",
+  "hdmf",
+  "less_cash_advance",
+  "net_pay",
+  "sss_details_section",
+  "ss_er",
+  "ss_ee",
+  "ss_total",
+  "column_break_30",
+  "wisp_er",
+  "wisp_ee",
+  "ec_er",
+  "phic_details_section",
+  "ph_ee",
+  "ph_er",
+  "hdmf_details_section",
+  "hd_ee",
+  "hd_er",
+  "total_contribution",
+  "amended_from",
+  "deductions_section",
+  "deductions"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "date_from",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date_to",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date To",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "employee.payroll_book",
+   "fieldname": "book",
+   "fieldtype": "Link",
+   "label": "Book",
+   "options": "Payroll Book"
+  },
+  {
+   "fetch_from": "employee.reporting_branch",
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "employee.basic_hours",
+   "fieldname": "basic_hours",
+   "fieldtype": "Float",
+   "label": "Basic Hours"
+  },
+  {
+   "fetch_from": "employee.hourly_rate",
+   "fieldname": "hourly_rate",
+   "fieldtype": "Currency",
+   "label": "Hourly Rate"
+  },
+  {
+   "fetch_from": "employee.user_id",
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "default": "0",
+   "fetch_from": "employee.allow_incentive",
+   "fieldname": "allow_incentive",
+   "fieldtype": "Check",
+   "label": "Allow Incentive"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Payroll Item"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_basic_pay",
+   "fieldtype": "Currency",
+   "label": "Total Basic Pay"
+  },
+  {
+   "fieldname": "total_overtime_pay",
+   "fieldtype": "Currency",
+   "label": "Total Overtime Pay"
+  },
+  {
+   "fieldname": "total_holiday_pay",
+   "fieldtype": "Currency",
+   "label": "Total Holiday Pay",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_incentive",
+   "fieldtype": "Currency",
+   "label": "Total Incentive"
+  },
+  {
+   "fieldname": "taxable_income",
+   "fieldtype": "Currency",
+   "label": "Taxable Income"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "deductions_column",
+   "fieldtype": "Column Break",
+   "label": "Deductions"
+  },
+  {
+   "fieldname": "tax",
+   "fieldtype": "Currency",
+   "label": "Tax"
+  },
+  {
+   "fieldname": "sss",
+   "fieldtype": "Currency",
+   "label": "SSS"
+  },
+  {
+   "fieldname": "philhealth",
+   "fieldtype": "Currency",
+   "label": "Philhealth"
+  },
+  {
+   "fieldname": "hdmf",
+   "fieldtype": "Currency",
+   "label": "HDMF"
+  },
+  {
+   "fieldname": "less_cash_advance",
+   "fieldtype": "Currency",
+   "label": "Deductions"
+  },
+  {
+   "fieldname": "net_pay",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Net Pay"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sss_details_section",
+   "fieldtype": "Section Break",
+   "label": "SSS Details"
+  },
+  {
+   "fieldname": "ss_er",
+   "fieldtype": "Currency",
+   "label": "SS ER"
+  },
+  {
+   "fieldname": "ss_ee",
+   "fieldtype": "Currency",
+   "label": "SS EE"
+  },
+  {
+   "fieldname": "ss_total",
+   "fieldtype": "Currency",
+   "label": "SS Total"
+  },
+  {
+   "fieldname": "column_break_30",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "wisp_er",
+   "fieldtype": "Currency",
+   "label": "WISP ER"
+  },
+  {
+   "fieldname": "wisp_ee",
+   "fieldtype": "Currency",
+   "label": "WISP EE"
+  },
+  {
+   "fieldname": "ec_er",
+   "fieldtype": "Currency",
+   "label": "EC ER"
+  },
+  {
+   "fieldname": "phic_details_section",
+   "fieldtype": "Section Break",
+   "label": "PHIC Details"
+  },
+  {
+   "fieldname": "ph_ee",
+   "fieldtype": "Currency",
+   "label": "PH_EE"
+  },
+  {
+   "fieldname": "ph_er",
+   "fieldtype": "Currency",
+   "label": "PH_ER"
+  },
+  {
+   "fieldname": "hdmf_details_section",
+   "fieldtype": "Section Break",
+   "label": "HDMF Details"
+  },
+  {
+   "fieldname": "hd_ee",
+   "fieldtype": "Currency",
+   "label": "HD_EE"
+  },
+  {
+   "fieldname": "hd_er",
+   "fieldtype": "Currency",
+   "label": "HD_ER"
+  },
+  {
+   "fieldname": "total_contribution",
+   "fieldtype": "Currency",
+   "label": "Total Contribution"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Payroll Voucher",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "deductions_section",
+   "fieldtype": "Section Break",
+   "label": "Deductions"
+  },
+  {
+   "fieldname": "deductions",
+   "fieldtype": "Table",
+   "options": "Payroll Voucher Deductions"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-10-04 23:10:31.791584",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Payroll Voucher",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Belizzo Staff",
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Belizzo Supervisor",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Belizzo Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "employee_name",
+ "track_changes": 1
+}

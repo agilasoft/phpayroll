@@ -1,0 +1,63 @@
+{
+ "actions": [],
+ "creation": "2024-10-25 18:18:40.556664",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "base_from",
+  "base_to",
+  "employee_rate",
+  "employer_rate",
+  "employee_fixed",
+  "employer_fixed"
+ ],
+ "fields": [
+  {
+   "fieldname": "base_from",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "From"
+  },
+  {
+   "fieldname": "base_to",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "To"
+  },
+  {
+   "fieldname": "employee_rate",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Employee Rate"
+  },
+  {
+   "fieldname": "employer_rate",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Employer Rate"
+  },
+  {
+   "fieldname": "employee_fixed",
+   "fieldtype": "Currency",
+   "label": "Employee Fixed"
+  },
+  {
+   "fieldname": "employer_fixed",
+   "fieldtype": "Currency",
+   "label": "Employer Fixed"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-04-27 22:48:20.918443",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Pagibig Table Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

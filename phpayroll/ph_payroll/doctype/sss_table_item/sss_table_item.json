@@ -1,0 +1,86 @@
+{
+ "actions": [],
+ "creation": "2024-05-23 19:12:33.613516",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "base_from",
+  "base_to",
+  "monthly_salary_credit",
+  "ss_er",
+  "ss_ee",
+  "ss_total",
+  "wisp_er",
+  "wisp_ee",
+  "ec_er",
+  "total_contribution"
+ ],
+ "fields": [
+  {
+   "fieldname": "base_from",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "From"
+  },
+  {
+   "fieldname": "base_to",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "To"
+  },
+  {
+   "fieldname": "monthly_salary_credit",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Monthly Salary Credit"
+  },
+  {
+   "fieldname": "ss_er",
+   "fieldtype": "Currency",
+   "label": "SS ER"
+  },
+  {
+   "fieldname": "ss_ee",
+   "fieldtype": "Currency",
+   "label": "SS EE"
+  },
+  {
+   "fieldname": "ss_total",
+   "fieldtype": "Currency",
+   "label": "SS Total"
+  },
+  {
+   "fieldname": "wisp_er",
+   "fieldtype": "Currency",
+   "label": "WISP ER"
+  },
+  {
+   "fieldname": "wisp_ee",
+   "fieldtype": "Currency",
+   "label": "WISP EE"
+  },
+  {
+   "fieldname": "ec_er",
+   "fieldtype": "Currency",
+   "label": "EC ER"
+  },
+  {
+   "fieldname": "total_contribution",
+   "fieldtype": "Currency",
+   "label": "Total Contribution"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-04-27 22:44:44.389024",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "SSS Table Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

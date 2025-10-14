@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "creation": "2024-02-22 01:50:16.953755",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "date",
+  "basic_pay",
+  "overtime_pay",
+  "holiday_pay",
+  "cash_advance",
+  "time_in",
+  "time_out",
+  "incentive",
+  "hours_worked",
+  "net_sales",
+  "ot_hours"
+ ],
+ "fields": [
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "basic_pay",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Basic Pay"
+  },
+  {
+   "fieldname": "overtime_pay",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Overtime Pay"
+  },
+  {
+   "fieldname": "cash_advance",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Cash Advance"
+  },
+  {
+   "fieldname": "incentive",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Incentive"
+  },
+  {
+   "fieldname": "holiday_pay",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Holiday Pay"
+  },
+  {
+   "fieldname": "time_in",
+   "fieldtype": "Datetime",
+   "label": "Time In"
+  },
+  {
+   "fieldname": "time_out",
+   "fieldtype": "Datetime",
+   "label": "Time Out"
+  },
+  {
+   "fieldname": "hours_worked",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Hours Worked"
+  },
+  {
+   "fieldname": "net_sales",
+   "fieldtype": "Currency",
+   "label": "Net Sales"
+  },
+  {
+   "fieldname": "ot_hours",
+   "fieldtype": "Float",
+   "label": "OT Hours"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-05-14 12:02:31.658426",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Payroll Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

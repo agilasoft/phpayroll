@@ -1,0 +1,75 @@
+{
+ "actions": [],
+ "autoname": "INC.######",
+ "creation": "2024-02-22 13:04:12.030167",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "branch",
+  "amount_from",
+  "amount_to",
+  "incentive"
+ ],
+ "fields": [
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "amount_from",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount From"
+  },
+  {
+   "fieldname": "amount_to",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount To"
+  },
+  {
+   "fieldname": "incentive",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Incentive"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-04-27 22:48:34.639070",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Incentive Scheme",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Payroll Processor",
+   "select": 1,
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "branch",
+ "track_changes": 1
+}
