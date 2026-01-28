@@ -183,31 +183,39 @@ def get_dates_between(start_date, end_date):
     return dates
 
 def fetch_time_and_sales(employee, date, branch, voucher):
-    time_in, time_out, time_in_branch, manual_time_in, manual_time_out = None, None, None, None, None
+    # First check if there's an Official Business record for this date
+    official_business = fetch_official_business(employee, date)
+    
+    if official_business:
+        # Use Official Business for attendance calculation
+        fetch_official_business_and_populate_items(employee, date, branch, official_business, voucher)
+    else:
+        # Use regular time in/time out
+        time_in, time_out, time_in_branch, manual_time_in, manual_time_out = None, None, None, None, None
 
-    try:
-        time_in_response = frappe.db.get_value('Time In', {'employee': employee, 'date': date}, ['time', 'branch'])
-        if time_in_response:
-            time_in, time_in_branch = time_in_response
+        try:
+            time_in_response = frappe.db.get_value('Time In', {'employee': employee, 'date': date}, ['time', 'branch'])
+            if time_in_response:
+                time_in, time_in_branch = time_in_response
 
-        time_out_response = frappe.db.get_value('Time Out', {'employee': employee, 'date': date}, 'time')
-        if time_out_response:
-            time_out = time_out_response
+            time_out_response = frappe.db.get_value('Time Out', {'employee': employee, 'date': date}, 'time')
+            if time_out_response:
+                time_out = time_out_response
 
-        if not time_in:
-            manual_time_in = fetch_manual_attendance_time(employee, date, 'Time In', branch)
-            time_in = manual_time_in['time']
-            if not time_in_branch:
-                time_in_branch = manual_time_in['branch']
+            if not time_in:
+                manual_time_in = fetch_manual_attendance_time(employee, date, 'Time In', branch)
+                time_in = manual_time_in['time']
+                if not time_in_branch:
+                    time_in_branch = manual_time_in['branch']
 
-        if not time_out:
-            manual_time_out = fetch_manual_attendance_time(employee, date, 'Time Out', branch)
-            time_out = manual_time_out['time']
+            if not time_out:
+                manual_time_out = fetch_manual_attendance_time(employee, date, 'Time Out', branch)
+                time_out = manual_time_out['time']
 
-    except Exception as err:
-        frappe.msgprint(f"Error fetching time records: {err}", title="Error")
+        except Exception as err:
+            frappe.msgprint(f"Error fetching time records: {err}", title="Error")
 
-    fetch_cash_count_and_populate_items(employee, date, time_in_branch, calculate_hours_worked(time_in, time_out), time_in, time_out, voucher)
+        fetch_cash_count_and_populate_items(employee, date, time_in_branch, calculate_hours_worked(time_in, time_out), time_in, time_out, voucher)
 
 def calculate_hours_worked(timestamp_in, timestamp_out):
     if not timestamp_in or not timestamp_out:
@@ -278,6 +286,123 @@ def fetch_cash_count_and_populate_items(employee, date, branch, hours_worked, ti
         frappe.msgprint(f"Error in payroll calculation: {err}", title="Error")
 
 
+
+def fetch_official_business(employee, date):
+    """
+    Fetch Official Business record for employee on a specific date
+    Returns the Official Business document if found, None otherwise
+    """
+    try:
+        ob_records = frappe.get_all('Official Business', 
+            filters={
+                'employee': employee, 
+                'date': date,
+                'docstatus': 1
+            }, 
+            fields=['name', 'number_of_days', 'total_additional_costs'],
+            limit=1
+        )
+        
+        if ob_records:
+            return frappe.get_doc('Official Business', ob_records[0]['name'])
+        return None
+    except Exception as err:
+        frappe.msgprint(f"Error fetching Official Business: {err}", title="Error")
+        return None
+
+def fetch_official_business_and_populate_items(employee, date, branch, official_business, voucher):
+    """
+    Populate payroll items based on Official Business record
+    Uses number_of_days to calculate basic pay instead of hours worked
+    """
+    try:
+        net_sales = 0  # Default value
+
+        # Safely check if the Cash Count doctype exists
+        try:
+            frappe.get_meta("Cash Count", cached=True)
+            # If exists, proceed to get the cash count data
+            cash_counts = frappe.db.get_list(
+                'Cash Count',
+                filters={'branch': branch, 'date': date},
+                fields=['sum(net_sales) as total_amount']
+            )
+            if cash_counts and cash_counts[0].get('total_amount'):
+                net_sales = cash_counts[0]['total_amount']
+        except frappe.DoesNotExistError:
+            net_sales = 0
+        except Exception as e:
+            net_sales = 0
+
+        # Basic pay computation based on Official Business number_of_days
+        basic_hours = voucher.basic_hours or 0
+        hourly_rate = voucher.hourly_rate or 0
+        number_of_days = flt(official_business.number_of_days) or 0
+        
+        # Convert days to hours (assuming 1 day = basic_hours)
+        # For 0.5 days, it would be basic_hours * 0.5, for 1.0 days, basic_hours * 1.0
+        worked_hours_for_pay = basic_hours * number_of_days
+        basic_pay = worked_hours_for_pay * hourly_rate
+
+        # Holiday pay
+        holiday_rate = get_holiday_rate(date)
+        holiday_pay = worked_hours_for_pay * hourly_rate * holiday_rate if holiday_rate else 0
+
+        # No overtime for Official Business days
+        ot_hours = 0
+        overtime_pay = 0
+
+        # Fetch cash advance (if any)
+        cash_advance = fetch_cash_advance(employee, date, voucher)
+        
+        # Subtract Official Business additional costs from cash advance (negative cash advance)
+        # This means additional costs reduce the cash advance amount
+        ob_additional_costs = flt(official_business.total_additional_costs) or 0
+        cash_advance -= ob_additional_costs
+        
+        # Add Official Business additional costs to deductions table as negative cash advance
+        if official_business.additional_costs:
+            for cost_item in official_business.additional_costs:
+                if cost_item.amount and cost_item.amount > 0:
+                    # Check if this deduction already exists to avoid duplicates
+                    existing_deduction = None
+                    for existing in voucher.deductions:
+                        if (existing.reference_no == official_business.name and 
+                            existing.date == date and
+                            existing.type == 'Official Business' and
+                            existing.remarks and cost_item.description in existing.remarks):
+                            existing_deduction = existing
+                            break
+                    
+                    if not existing_deduction:
+                        deduction = voucher.append('deductions', {})
+                        deduction.reference_no = official_business.name
+                        deduction.date = date
+                        deduction.type = 'Official Business'
+                        # Negative amount to represent negative cash advance (reduces cash advance)
+                        deduction.amount = -flt(cost_item.amount)
+                        deduction.remarks = f"OB: {cost_item.description or 'Additional Cost'} (Negative Cash Advance)" + (f" - {cost_item.remarks}" if cost_item.remarks else "")
+
+        incentive = fetch_incentive(branch, net_sales)
+
+        # Populate item
+        item = {
+            'date': date,
+            'time_in': None,  # No time in/out for Official Business
+            'time_out': None,
+            'hours_worked': worked_hours_for_pay,
+            'net_sales': net_sales,
+            'basic_pay': basic_pay,
+            'holiday_pay': holiday_pay,
+            'ot_hours': ot_hours,
+            'overtime_pay': overtime_pay,
+            'cash_advance': cash_advance,
+            'incentive': incentive
+        }
+        voucher.append('items', item)
+
+    except Exception as err:
+        frappe.msgprint(f"Error in Official Business payroll calculation: {err}", title="Error")
 
 def fetch_overtime_hours(employee, date):
     try:
