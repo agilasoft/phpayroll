@@ -1,7 +1,7 @@
 {
  "app": "phpayroll",
  "charts": [],
- "content": "[{\"id\":\"hfH1u_sNrI\",\"type\":\"header\",\"data\":{\"text\":\"<span style=\\\"font-size: 16px;\\\">Time Management</span>\",\"col\":12}},{\"id\":\"cjMLN7CAeH\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Time In\",\"col\":3}},{\"id\":\"NU6CrDa1ZU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Time Out\",\"col\":3}},{\"id\":\"N2dqGrNlEI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Manual Attendance\",\"col\":3}},{\"id\":\"q7TtruwPwv\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Overtime\",\"col\":3}},{\"id\":\"o8QOS-h1a7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Official Business\",\"col\":3}},{\"id\":\"yjC2l8F7c-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Cash Advance\",\"col\":3}},{\"id\":\"nfAOfGydth\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"YqcX4cCHC7\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"id\":\"0tjMWcszv9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pay Slip\",\"col\":3}}]",
+ "content": "[{\"id\":\"hfH1u_sNrI\",\"type\":\"header\",\"data\":{\"text\":\"<span style=\\\"font-size: 16px;\\\">Time Management</span>\",\"col\":12}},{\"id\":\"cjMLN7CAeH\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Time In\",\"col\":3}},{\"id\":\"NU6CrDa1ZU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Time Out\",\"col\":3}},{\"id\":\"N2dqGrNlEI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Manual Attendance\",\"col\":3}},{\"id\":\"q7TtruwPwv\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Overtime\",\"col\":3}},{\"id\":\"o8QOS-h1a7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Official Business\",\"col\":3}},{\"id\":\"lvWnShrt01\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leave\",\"col\":3}},{\"id\":\"lvCrShrt02\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leave Credits\",\"col\":3}},{\"id\":\"lvTyShrt03\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leave Type\",\"col\":3}},{\"id\":\"yjC2l8F7c-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Cash Advance\",\"col\":3}},{\"id\":\"nfAOfGydth\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"YqcX4cCHC7\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"id\":\"0tjMWcszv9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pay Slip\",\"col\":3}}]",
  "creation": "2026-01-29 10:22:11.037711",
  "custom_blocks": [],
  "docstatus": 0,
@@ -64,6 +64,30 @@
    "doc_view": "List",
    "label": "Official Business",
    "link_to": "Official Business",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Leave",
+   "link_to": "Leave",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Leave Credits",
+   "link_to": "Leave Credits",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Leave Type",
+   "link_to": "Leave Type",
    "stats_filter": "[]",
    "type": "DocType"
   },

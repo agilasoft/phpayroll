@@ -346,33 +346,39 @@ def fetch_time_and_sales(employee, date, branch, voucher):
     if official_business:
         # Use Official Business for attendance calculation
         fetch_official_business_and_populate_items(employee, date, branch, official_business, voucher)
-    else:
-        # Use regular time in/time out
-        time_in, time_out, time_in_branch, manual_time_in, manual_time_out = None, None, None, None, None
+        return
 
-        try:
-            time_in_response = frappe.db.get_value('Time In', {'employee': employee, 'date': date}, ['time', 'branch'])
-            if time_in_response:
-                time_in, time_in_branch = time_in_response
+    leave_doc = fetch_leave(employee, date)
+    if leave_doc:
+        fetch_leave_and_populate_items(employee, date, branch, leave_doc, voucher)
+        return
 
-            time_out_response = frappe.db.get_value('Time Out', {'employee': employee, 'date': date}, 'time')
-            if time_out_response:
-                time_out = time_out_response
+    # Use regular time in/time out
+    time_in, time_out, time_in_branch, manual_time_in, manual_time_out = None, None, None, None, None
 
-            if not time_in:
-                manual_time_in = fetch_manual_attendance_time(employee, date, 'Time In', branch)
-                time_in = manual_time_in['time']
-                if not time_in_branch:
-                    time_in_branch = manual_time_in['branch']
+    try:
+        time_in_response = frappe.db.get_value('Time In', {'employee': employee, 'date': date}, ['time', 'branch'])
+        if time_in_response:
+            time_in, time_in_branch = time_in_response
 
-            if not time_out:
-                manual_time_out = fetch_manual_attendance_time(employee, date, 'Time Out', branch)
-                time_out = manual_time_out['time']
+        time_out_response = frappe.db.get_value('Time Out', {'employee': employee, 'date': date}, 'time')
+        if time_out_response:
+            time_out = time_out_response
 
-        except Exception as err:
-            frappe.msgprint(f"Error fetching time records: {err}", title="Error")
+        if not time_in:
+            manual_time_in = fetch_manual_attendance_time(employee, date, 'Time In', branch)
+            time_in = manual_time_in['time']
+            if not time_in_branch:
+                time_in_branch = manual_time_in['branch']
 
-        fetch_cash_count_and_populate_items(employee, date, time_in_branch, calculate_hours_worked(time_in, time_out), time_in, time_out, voucher)
+        if not time_out:
+            manual_time_out = fetch_manual_attendance_time(employee, date, 'Time Out', branch)
+            time_out = manual_time_out['time']
+
+    except Exception as err:
+        frappe.msgprint(f"Error fetching time records: {err}", title="Error")
+
+    fetch_cash_count_and_populate_items(employee, date, time_in_branch, calculate_hours_worked(time_in, time_out), time_in, time_out, voucher)
 
 def calculate_hours_worked(timestamp_in, timestamp_out):
     if not timestamp_in or not timestamp_out:
@@ -528,6 +534,68 @@ def fetch_official_business_and_populate_items(employee, date, branch, official_
 
     except Exception as err:
         frappe.msgprint(f"Error in Official Business payroll calculation: {err}", title="Error")
+
+
+def fetch_leave(employee, date):
+    """Return submitted Leave for employee on date, if any."""
+    try:
+        leave_rows = frappe.get_all(
+            "Leave",
+            filters={"employee": employee, "date": date, "docstatus": 1},
+            fields=["name", "number_of_days"],
+            limit=1,
+        )
+        if leave_rows:
+            return frappe.get_doc("Leave", leave_rows[0]["name"])
+        return None
+    except Exception as err:
+        frappe.msgprint(f"Error fetching Leave: {err}", title="Error")
+        return None
+
+
+def fetch_leave_and_populate_items(employee, date, branch, leave_doc, voucher):
+    """
+    Populate payroll items from Leave (paid leave), same basic/holiday logic as Official Business.
+    Credits are enforced on Leave submit; payroll only considers submitted leaves.
+    """
+    try:
+        net_sales = get_cash_count_net_sales(branch, date)
+
+        basic_hours = voucher.basic_hours or 0
+        hourly_rate = voucher.hourly_rate or 0
+        # Treat missing number_of_days as 1 for legacy Leave rows created before this field existed
+        number_of_days = flt(getattr(leave_doc, "number_of_days", None)) or 1
+
+        worked_hours_for_pay = basic_hours * number_of_days
+        basic_pay = worked_hours_for_pay * hourly_rate
+
+        holiday_rate = get_holiday_rate(date)
+        holiday_pay = worked_hours_for_pay * hourly_rate * holiday_rate if holiday_rate else 0
+
+        ot_hours = 0
+        overtime_pay = 0
+
+        cash_advance = fetch_cash_advance(employee, date, voucher)
+        incentive = fetch_incentive(branch, net_sales)
+
+        item = {
+            "date": date,
+            "time_in": None,
+            "time_out": None,
+            "hours_worked": worked_hours_for_pay,
+            "net_sales": net_sales,
+            "basic_pay": basic_pay,
+            "holiday_pay": holiday_pay,
+            "ot_hours": ot_hours,
+            "overtime_pay": overtime_pay,
+            "cash_advance": cash_advance,
+            "incentive": incentive,
+        }
+        voucher.append("items", item)
+
+    except Exception as err:
+        frappe.msgprint(f"Error in Leave payroll calculation: {err}", title="Error")
+
 
 def fetch_overtime_hours(employee, date):
     try:
