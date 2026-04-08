@@ -1,0 +1,32 @@
+{
+ "actions": [],
+ "creation": "2026-04-04 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "income_component"
+ ],
+ "fields": [
+  {
+   "fieldname": "income_component",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Income Component",
+   "options": "basic_pay\novertime_pay\nholiday_pay\nincentive\nnet_sales\ncash_advance",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-04-04 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Payroll Settings 13th Month Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

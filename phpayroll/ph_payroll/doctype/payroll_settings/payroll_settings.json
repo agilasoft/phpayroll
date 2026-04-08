@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "creation": "2026-04-04 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enable_13th_month",
+  "include_special_in_13th_month_base",
+  "section_13th",
+  "thirteenth_month_income_items"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enable_13th_month",
+   "fieldtype": "Check",
+   "label": "Enable 13th Month"
+  },
+  {
+   "default": "0",
+   "description": "If enabled, Payroll Vouchers with Run Type Special are included when summing the annual base.",
+   "fieldname": "include_special_in_13th_month_base",
+   "fieldtype": "Check",
+   "label": "Include Special Run Vouchers in 13th Month Base"
+  },
+  {
+   "fieldname": "section_13th",
+   "fieldtype": "Section Break",
+   "label": "13th Month Income Components"
+  },
+  {
+   "description": "Payroll Item fields to sum for the annual base (before dividing by 12). If empty, Basic Pay only is used.",
+   "fieldname": "thirteenth_month_income_items",
+   "fieldtype": "Table",
+   "label": "Included Income Components",
+   "options": "Payroll Settings 13th Month Item"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-04-04 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "HR User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

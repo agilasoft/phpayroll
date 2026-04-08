@@ -1,0 +1,1 @@
+phpayroll.patches.set_payroll_voucher_run_type_default

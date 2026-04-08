@@ -4,8 +4,18 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, getdate, add_days, get_datetime, time_diff_in_hours
+from frappe.utils import cint, flt, getdate, add_days, get_datetime, time_diff_in_hours
+
+RUN_TYPE_REGULAR = "Regular"
+RUN_TYPE_13TH = "13th Month"
+RUN_TYPE_SPECIAL = "Special"
+
+THIRTEENTH_MONTH_ITEM_FIELDS = frozenset({
+    "basic_pay", "overtime_pay", "holiday_pay", "incentive", "net_sales", "cash_advance",
+})
+
 
 class PayrollVoucher(Document):
     pass
@@ -17,7 +27,7 @@ def run_payroll(date_from, date_to, branch):
 
     employees = frappe.get_all('Employee', filters={'status': 'Active', 'reporting_branch': branch})
     for employee in employees:
-        voucher = get_or_create_payroll_voucher(employee.name, date_from, date_to, branch)
+        voucher = get_or_create_payroll_voucher(employee.name, date_from, date_to, branch, RUN_TYPE_REGULAR)
         
         if voucher:
             populate_items(voucher)
@@ -29,61 +39,181 @@ def run_payroll(date_from, date_to, branch):
    
 @frappe.whitelist()
 def recompute_payroll_voucher(voucher_name):
-    # Load the document using the passed voucher name
-    voucher = frappe.get_doc('Payroll Voucher', voucher_name)
-
-    # Populate items and save the document
-    populate_items(voucher)
+    voucher = frappe.get_doc("Payroll Voucher", voucher_name)
+    if voucher.run_type == RUN_TYPE_13TH:
+        populate_13th_month_voucher(voucher)
+    else:
+        populate_items(voucher)
     voucher.save(ignore_permissions=True)
+    frappe.msgprint(
+        _("Payroll voucher recomputed successfully. Voucher updated: {0}").format(voucher.name),
+        title=_("Payroll Recompute Complete"),
+    )
+    return _("Payroll voucher recomputed successfully. Voucher updated: {0}").format(voucher.name)
 
-    # Return a message indicating success
-    frappe.msgprint(f"Payroll voucher recomputed successfully. Voucher updated: {voucher.name}", title="Payroll Recompute Complete")
-    return f"Payroll voucher recomputed successfully. Voucher updated: {voucher.name}"
-    
-def get_or_create_payroll_voucher(employee, date_from, date_to, branch):
-    # First, check for existing vouchers with exact date matches
-    existing_vouchers = frappe.get_all('Payroll Voucher', filters={
-        'employee': employee,
-        'branch': branch,
-        'date_from': date_from,
-        'date_to': date_to
-    })
+
+@frappe.whitelist()
+def run_13th_month(date_from, date_to, branch):
+    from phpayroll.ph_payroll.doctype.payroll_settings.payroll_settings import get_defaults_for_13th_month
+
+    enabled, _include_special, _codes = get_defaults_for_13th_month()
+    if not enabled:
+        frappe.throw(_("Enable 13th month in Payroll Settings."))
+
+    frappe.msgprint(
+        _("Running 13th month for {0} to {1}, branch {2}").format(date_from, date_to, branch),
+        title=_("13th Month Run Start"),
+    )
+    payroll_vouchers = []
+    employees = frappe.get_all("Employee", filters={"status": "Active", "reporting_branch": branch})
+    for employee in employees:
+        voucher = get_or_create_payroll_voucher(employee.name, date_from, date_to, branch, RUN_TYPE_13TH)
+        if voucher:
+            populate_13th_month_voucher(voucher)
+            voucher.save(ignore_permissions=True)
+            payroll_vouchers.append(voucher.name)
+
+    frappe.msgprint(
+        _("13th month run completed. Vouchers: {0}").format(", ".join(payroll_vouchers) or _("none")),
+        title=_("13th Month Run Complete"),
+    )
+    return _("13th month run completed. Vouchers: {0}").format(", ".join(payroll_vouchers) or _("none"))
+
+
+def get_or_create_payroll_voucher(employee, date_from, date_to, branch, run_type=RUN_TYPE_REGULAR):
+    existing_vouchers = frappe.get_all(
+        "Payroll Voucher",
+        filters={
+            "employee": employee,
+            "branch": branch,
+            "date_from": date_from,
+            "date_to": date_to,
+            "run_type": run_type,
+        },
+    )
 
     if existing_vouchers:
-        existing_voucher = frappe.get_doc('Payroll Voucher', existing_vouchers[0].name)
-        frappe.msgprint(f"Found existing voucher with exact date range for Employee: {employee} in branch: {branch}. Updating the existing voucher.", title="Voucher Exact Match")
+        existing_voucher = frappe.get_doc("Payroll Voucher", existing_vouchers[0].name)
+        frappe.msgprint(
+            _("Found existing voucher (same dates and run type) for Employee: {0}").format(employee),
+            title=_("Voucher Exact Match"),
+        )
         return existing_voucher
 
-    # Next, check for overlapping vouchers
-    overlapping_vouchers = frappe.get_all('Payroll Voucher', filters={
-        'employee': employee,
-        'branch': branch,
-        'date_from': ['<=', date_to],
-        'date_to': ['>=', date_from]
-    })
+    overlapping_vouchers = frappe.get_all(
+        "Payroll Voucher",
+        filters={
+            "employee": employee,
+            "branch": branch,
+            "run_type": run_type,
+            "date_from": ["<=", date_to],
+            "date_to": [">=", date_from],
+        },
+    )
 
     if overlapping_vouchers:
-        frappe.msgprint(f"Found overlapping vouchers for Employee: {employee} in branch: {branch}. Cannot create/update voucher due to overlap.", title="Voucher Overlap")
+        frappe.msgprint(
+            _("Overlapping {0} voucher for Employee: {1} in branch: {2}.").format(run_type, employee, branch),
+            title=_("Voucher Overlap"),
+        )
         return None
 
-    # If no exact match or overlap, create a new voucher
-    voucher = frappe.new_doc('Payroll Voucher')
+    voucher = frappe.new_doc("Payroll Voucher")
     voucher.employee = employee
     voucher.date_from = date_from
     voucher.date_to = date_to
     voucher.branch = branch
+    voucher.run_type = run_type
     voucher.save(ignore_permissions=True)
-    frappe.msgprint(f"Created new Payroll Voucher: {voucher.name} for Employee: {employee}", title="Payroll Voucher Creation")
+    frappe.msgprint(
+        _("Created new Payroll Voucher: {0} for Employee: {1}").format(voucher.name, employee),
+        title=_("Payroll Voucher Creation"),
+    )
     return voucher
 
+
+def get_13th_month_annual_base(employee, branch, date_from, date_to, include_special, fieldnames):
+    fieldnames = [f for f in (fieldnames or []) if f in THIRTEENTH_MONTH_ITEM_FIELDS]
+    if not fieldnames:
+        fieldnames = ["basic_pay"]
+    sum_parts = ", ".join(
+        "COALESCE(SUM(pi.`{0}`), 0) AS `sum_{0}`".format(f) for f in fieldnames
+    )
+    if include_special:
+        type_clause = "pv.run_type IN ('Regular', 'Special')"
+    else:
+        type_clause = "pv.run_type = 'Regular'"
+    sql = """
+        SELECT {sums}
+        FROM `tabPayroll Item` pi
+        INNER JOIN `tabPayroll Voucher` pv ON pi.parent = pv.name AND pi.parenttype = 'Payroll Voucher'
+        WHERE pv.employee = %(employee)s
+            AND IFNULL(pv.branch, '') = IFNULL(%(branch)s, '')
+            AND IFNULL(pv.docstatus, 0) < 2
+            AND {type_clause}
+            AND pi.date BETWEEN %(d0)s AND %(d1)s
+    """.format(sums=sum_parts, type_clause=type_clause)
+    rows = frappe.db.sql(
+        sql,
+        {
+            "employee": employee,
+            "branch": branch or "",
+            "d0": getdate(date_from),
+            "d1": getdate(date_to),
+        },
+        as_dict=True,
+    )
+    if not rows:
+        return 0.0
+    row = rows[0]
+    return sum(flt(row.get("sum_{0}".format(f), 0)) for f in fieldnames)
+
+
+def populate_13th_month_voucher(voucher):
+    from phpayroll.ph_payroll.doctype.payroll_settings.payroll_settings import get_defaults_for_13th_month
+
+    if (getattr(voucher, "run_type", None) or RUN_TYPE_REGULAR) != RUN_TYPE_13TH:
+        return
+    enabled, include_special, fieldnames = get_defaults_for_13th_month()
+    if not enabled:
+        frappe.throw(_("Enable 13th month in Payroll Settings."))
+
+    annual = get_13th_month_annual_base(
+        voucher.employee,
+        voucher.branch,
+        voucher.date_from,
+        voucher.date_to,
+        include_special,
+        fieldnames,
+    )
+    thirteenth = flt(annual) / 12.0
+
+    voucher.set("items", [])
+    voucher.set("deductions", [])
+    for _field in (
+        "total_basic_pay", "total_overtime_pay", "total_holiday_pay", "total_incentive",
+        "taxable_income", "tax", "sss", "philhealth", "hdmf", "less_cash_advance",
+        "ss_er", "ss_ee", "ss_total", "wisp_er", "wisp_ee", "ec_er",
+        "ph_ee", "ph_er", "hd_ee", "hd_er", "total_contribution",
+    ):
+        voucher.set(_field, 0)
+    voucher.thirteenth_month_pay = thirteenth
+    voucher.net_pay = thirteenth
+
 def populate_items(voucher):
+    run_type = getattr(voucher, "run_type", None) or RUN_TYPE_REGULAR
+    if run_type == RUN_TYPE_13TH:
+        frappe.throw(
+            _("Run Type is 13th Month. Use Recompute Payroll to refresh 13th month amounts.")
+        )
+
     date_from = voucher.date_from
     date_to = voucher.date_to
     employee = voucher.employee
     branch = voucher.branch
 
     if not date_from or not date_to or not employee:
-        frappe.throw(_('Please ensure Employee, Date From, and Date To are filled.'))
+        frappe.throw(_("Please ensure Employee, Date From, and Date To are filled."))
 
     voucher.set('items', [])
     voucher.set('deductions', [])  # Clear existing deductions
@@ -149,6 +279,13 @@ def populate_items(voucher):
     net_pay = total_basic_pay + total_holiday_pay + total_overtime_pay + total_incentive - less_cash_advance + manual_basic_pay + manual_holiday_pay + manual_overtime_pay + manual_incentive - manual_cash_advance
     voucher.net_pay = net_pay  # Set the initial net pay before deductions
 
+    # Clear prior contribution amounts so unchecked Employee flags do not leave stale values
+    for _field in (
+        'ss_er', 'ss_ee', 'wisp_er', 'wisp_ee', 'ec_er',
+        'ph_ee', 'ph_er', 'hd_ee', 'hd_er',
+    ):
+        voucher.set(_field, 0)
+
     # Calculate contributions based on whether end of month is included in the cutoff
     if is_end_of_month_cutoff(date_to):
         calculate_end_of_month_contributions(voucher, employee, total_basic_pay)
@@ -181,6 +318,26 @@ def get_dates_between(start_date, end_date):
         dates.append(current_date)
         current_date = add_days(current_date, 1)
     return dates
+
+
+def get_cash_count_net_sales(branch, date):
+    """Sum net_sales for branch/date. Silent 0 if Cash Count DocType/table is missing."""
+    if not frappe.db.exists("DocType", "Cash Count"):
+        return 0
+    try:
+        rows = frappe.db.sql(
+            """
+            SELECT COALESCE(SUM(`net_sales`), 0) AS total_amount
+            FROM `tabCash Count`
+            WHERE `branch` = %s AND `date` = %s
+            """,
+            (branch, date),
+            as_dict=True,
+        )
+        return flt(rows[0].total_amount) if rows else 0
+    except Exception:
+        return 0
+
 
 def fetch_time_and_sales(employee, date, branch, voucher):
     # First check if there's an Official Business record for this date
@@ -228,23 +385,7 @@ def calculate_hours_worked(timestamp_in, timestamp_out):
 
 def fetch_cash_count_and_populate_items(employee, date, branch, hours_worked, time_in, time_out, voucher):
     try:
-        net_sales = 0  # Default value
-
-        # Safely check if the Cash Count doctype exists
-        try:
-            frappe.get_meta("Cash Count", cached=True)
-            # If exists, proceed to get the cash count data
-            cash_counts = frappe.db.get_list(
-                'Cash Count',
-                filters={'branch': branch, 'date': date},
-                fields=['sum(net_sales) as total_amount']
-            )
-            if cash_counts and cash_counts[0].get('total_amount'):
-                net_sales = cash_counts[0]['total_amount']
-        except frappe.DoesNotExistError:
-            net_sales = 0
-        except Exception as e:
-            net_sales = 0
+        net_sales = get_cash_count_net_sales(branch, date)
 
         # Basic pay computation
         basic_hours = voucher.basic_hours or 0
@@ -316,23 +457,7 @@ def fetch_official_business_and_populate_items(employee, date, branch, official_
     Uses number_of_days to calculate basic pay instead of hours worked
     """
     try:
-        net_sales = 0  # Default value
-
-        # Safely check if the Cash Count doctype exists
-        try:
-            frappe.get_meta("Cash Count", cached=True)
-            # If exists, proceed to get the cash count data
-            cash_counts = frappe.db.get_list(
-                'Cash Count',
-                filters={'branch': branch, 'date': date},
-                fields=['sum(net_sales) as total_amount']
-            )
-            if cash_counts and cash_counts[0].get('total_amount'):
-                net_sales = cash_counts[0]['total_amount']
-        except frappe.DoesNotExistError:
-            net_sales = 0
-        except Exception as e:
-            net_sales = 0
+        net_sales = get_cash_count_net_sales(branch, date)
 
         # Basic pay computation based on Official Business number_of_days
         basic_hours = voucher.basic_hours or 0
@@ -406,8 +531,16 @@ def fetch_official_business_and_populate_items(employee, date, branch, official_
 
 def fetch_overtime_hours(employee, date):
     try:
-        ot_response = frappe.db.get_list('Overtime', filters={'employee': employee, 'date': date, 'docstatus':1}, fields=['sum(hours) as total_hours'])
-        return flt(ot_response[0]['total_hours']) if ot_response and ot_response[0]['total_hours'] else 0
+        rows = frappe.db.sql(
+            """
+            SELECT COALESCE(SUM(`hours`), 0) AS total_hours
+            FROM `tabOvertime`
+            WHERE `employee` = %s AND `date` = %s AND `docstatus` = 1
+            """,
+            (employee, date),
+            as_dict=True,
+        )
+        return flt(rows[0].total_hours) if rows else 0
     except Exception as err:
         frappe.msgprint(f"Error fetching overtime hours: {err}", title="Error")
         return 0
@@ -964,21 +1097,21 @@ def has_hdmf_contribution(employee):
     Check if the employee has the HDMF (Pagibig) contribution field checked.
     """
     employee_doc = frappe.get_doc('Employee', employee)
-    return str(employee_doc.sss_contribution)
+    return str(cint(employee_doc.hdmf_contribution))
 
 def has_sss_contribution(employee):
     """
     Check if the employee has the SSS contribution field checked.
     """
     employee_doc = frappe.get_doc('Employee', employee)
-    return str(employee_doc.sss_contribution)
+    return str(cint(employee_doc.sss_contribution))
 
 def has_philhealth_contribution(employee):
     """
     Check if the employee has PhilHealth contribution enabled.
     """
     employee_doc = frappe.get_doc('Employee', employee)
-    return str(employee_doc.sss_contribution)
+    return str(cint(employee_doc.phic_contribution))
     
 
 def get_monthly_basic_pay_from_items(employee, date_from):

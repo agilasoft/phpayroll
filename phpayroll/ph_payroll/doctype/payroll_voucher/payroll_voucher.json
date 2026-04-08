@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "format:{employee} {date_to}",
+ "autoname": "format:{employee}-{date_to}-{run_type}",
  "creation": "2024-02-22 01:48:22.359883",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -12,6 +12,7 @@
   "date_to",
   "book",
   "branch",
+  "run_type",
   "column_break_4",
   "basic_hours",
   "hourly_rate",
@@ -24,6 +25,7 @@
   "total_overtime_pay",
   "total_holiday_pay",
   "total_incentive",
+  "thirteenth_month_pay",
   "taxable_income",
   "column_break_14",
   "deductions_column",
@@ -97,6 +99,15 @@
    "options": "Branch"
   },
   {
+   "default": "Regular",
+   "fieldname": "run_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Run Type",
+   "options": "Regular\n13th Month\nSpecial",
+   "reqd": 1
+  },
+  {
    "fieldname": "column_break_4",
    "fieldtype": "Column Break"
   },
@@ -160,6 +171,14 @@
    "fieldname": "total_incentive",
    "fieldtype": "Currency",
    "label": "Total Incentive"
+  },
+  {
+   "depends_on": "eval:doc.run_type=='13th Month'",
+   "description": "Total 13th month pay for this run (annual included base divided by 12).",
+   "fieldname": "thirteenth_month_pay",
+   "fieldtype": "Currency",
+   "label": "13th Month Pay",
+   "read_only": 1
   },
   {
    "fieldname": "taxable_income",
