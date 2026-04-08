@@ -1,0 +1,130 @@
+{
+ "app": "phpayroll",
+ "creation": "2026-01-29 10:24:45.557558",
+ "docstatus": 0,
+ "doctype": "Workspace Sidebar",
+ "header_icon": "users",
+ "idx": 0,
+ "items": [
+  {
+   "child": 0,
+   "collapsible": 1,
+   "icon": "home",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Home",
+   "link_to": "Payroll",
+   "link_type": "Workspace",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 0,
+   "collapsible": 1,
+   "icon": "chart-column",
+   "indent": 1,
+   "keep_closed": 1,
+   "label": "Dashboard",
+   "link_type": "Workspace",
+   "show_arrow": 0,
+   "type": "Section Break"
+  },
+  {
+   "child": 0,
+   "collapsible": 1,
+   "icon": "clock-check",
+   "indent": 1,
+   "keep_closed": 1,
+   "label": "Time Management",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Section Break"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Time In",
+   "link_to": "Time In",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Time Out",
+   "link_to": "Time Out",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Overtime",
+   "link_to": "Overtime",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Manual Attendance",
+   "link_to": "Manual Attendance",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 0,
+   "collapsible": 1,
+   "icon": "calendar-check-2",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Official Business",
+   "link_to": "Official Business",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 0,
+   "collapsible": 1,
+   "icon": "money-coins-1",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Pay Slip",
+   "link_to": "Payroll Voucher",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 0,
+   "collapsible": 1,
+   "icon": "sheet",
+   "indent": 1,
+   "keep_closed": 1,
+   "label": "Reports",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Section Break"
+  }
+ ],
+ "modified": "2026-01-29 10:36:41.721985",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Payroll",
+ "owner": "Administrator",
+ "standard": 1,
+ "title": "Payroll"
+}
