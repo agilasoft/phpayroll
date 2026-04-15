@@ -769,37 +769,55 @@ def fetch_overtime_hours(employee, date):
 
 def fetch_cash_advance(employee, date, voucher=None):
     try:
-        parent_docs = frappe.db.get_list('Cash Advance', filters={'employee': employee}, fields=['name'])
-        
+        # Use get_all (not get_list): payroll must see liquidations even when the current user
+        # cannot read Cash Advance via role permissions (e.g. HR running another employee's payroll).
+        parent_docs = frappe.get_all(
+            "Cash Advance",
+            filters={"employee": employee},
+            fields=["name"],
+        )
+
         total_cash_advance = 0
         deductions_added = 0
-        
+
         for doc in parent_docs:
-            liquidations = frappe.db.get_list('Cash Advance Liquidation', filters={'parent': doc.name, 'date': date}, fields=['amount'])
-            
+            liquidations = frappe.get_all(
+                "Cash Advance Liquidation",
+                filters={"parent": doc.name, "date": date},
+                fields=["amount"],
+            )
+
             for liquidation in liquidations:
                 total_cash_advance += flt(liquidation.amount)
-                
+
                 # If voucher is provided, add to deductions table
                 if voucher and flt(liquidation.amount) > 0:
-                    # Get cash advance details
-                    ca_doc = frappe.get_doc('Cash Advance', doc.name)
-                    
+                    ca_info = frappe.db.get_value(
+                        "Cash Advance",
+                        doc.name,
+                        ["type", "purpose"],
+                        as_dict=True,
+                    )
+                    if not ca_info:
+                        continue
+
                     # Check if this deduction already exists to avoid duplicates
                     existing_deduction = None
                     for existing in voucher.deductions:
-                        if (existing.reference_no == doc.name and 
-                            existing.date == date):
+                        if (existing.reference_no == doc.name and
+                                existing.date == date):
                             existing_deduction = existing
                             break
-                    
+
                     if not existing_deduction:
                         deduction = voucher.append('deductions', {})
                         deduction.reference_no = doc.name
                         deduction.date = date
-                        deduction.type = ca_doc.type
+                        deduction.type = ca_info.get("type")
                         deduction.amount = flt(liquidation.amount)
-                        deduction.remarks = f"{ca_doc.purpose} - Liquidation Amount: {liquidation.amount}"
+                        deduction.remarks = (
+                            f"{ca_info.get('purpose') or ''} - Liquidation Amount: {flt(liquidation.amount)}"
+                        )
                         deductions_added += 1
                         frappe.msgprint(f"Added deduction: {doc.name} on {date} for {liquidation.amount}", title="Debug")
         
