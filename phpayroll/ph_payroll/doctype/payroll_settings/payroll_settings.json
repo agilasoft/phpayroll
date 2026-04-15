@@ -8,7 +8,33 @@
   "enable_13th_month",
   "include_special_in_13th_month_base",
   "section_13th",
-  "thirteenth_month_income_items"
+  "thirteenth_month_income_items",
+  "section_income_tax",
+  "income_tax_enabled",
+  "withholding_method",
+  "column_break_tax",
+  "default_annual_tax_table",
+  "deduct_contributions_from_tax_base",
+  "annualized_month_basis",
+  "annualized_use_date_of_joining",
+  "tax_base_income_items",
+  "section_timekeeping",
+  "time_rounding_minutes",
+  "time_minimum_paid_hours",
+  "default_ot_multiplier",
+  "column_break_time",
+  "unpaid_break_minutes_per_day",
+  "unpaid_break_apply_after_hours",
+  "apply_rest_day_sunday",
+  "rest_day_rate",
+  "enable_night_differential",
+  "night_window_start",
+  "night_window_end",
+  "night_differential_multiplier",
+  "section_leave_accrual",
+  "leave_accrual_leave_type",
+  "leave_accrual_days_per_year",
+  "leave_accrual_grant_month"
  ],
  "fields": [
   {
@@ -35,12 +61,182 @@
    "fieldtype": "Table",
    "label": "Included Income Components",
    "options": "Payroll Settings 13th Month Item"
+  },
+  {
+   "fieldname": "section_income_tax",
+   "fieldtype": "Section Break",
+   "label": "Withholding Tax (BIR)"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, Regular/Special payroll runs compute Tax and Taxable Income from Annual Tax Table (unless Method is Manual Only).",
+   "fieldname": "income_tax_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Income Tax Withholding"
+  },
+  {
+   "default": "Annual_Table_Per_Cycle",
+   "description": "Annual_Table_Per_Cycle: tax from annual table on this period\u2019s taxable only. Annualized_YTD: projected annual income from YTD, prorated tax due minus tax already withheld. Manual_Only: do not overwrite Tax fields.",
+   "fieldname": "withholding_method",
+   "fieldtype": "Select",
+   "label": "Withholding Method",
+   "options": "Annual_Table_Per_Cycle\nAnnualized_YTD\nManual_Only"
+  },
+  {
+   "fieldname": "column_break_tax",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_annual_tax_table",
+   "fieldtype": "Link",
+   "label": "Default Annual Tax Table",
+   "options": "Annual Tax Table"
+  },
+  {
+   "default": "0",
+   "description": "Subtract employee SSS, WISP, PhilHealth, and HDMF shares from the tax base before bracket lookup.",
+   "fieldname": "deduct_contributions_from_tax_base",
+   "fieldtype": "Check",
+   "label": "Deduct Contributions from Tax Base"
+  },
+  {
+   "default": "Calendar_Month_of_Date_To",
+   "depends_on": "eval:doc.withholding_method==\"Annualized_YTD\"",
+   "description": "How to count \u201cmonths elapsed\u201d for (YTD taxable / n) \u00d7 12: calendar months from Jan (or from joining) to payroll Date To, or number of pay slips in the year including this one.",
+   "fieldname": "annualized_month_basis",
+   "fieldtype": "Select",
+   "label": "Annualized Month Basis",
+   "options": "Calendar_Month_of_Date_To\nPay_Period_Count_YTD"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.withholding_method==\"Annualized_YTD\" && doc.annualized_month_basis==\"Calendar_Month_of_Date_To\"",
+   "description": "Start the month count from the calendar month of Date of Joining when it falls in the payroll year (otherwise from January).",
+   "fieldname": "annualized_use_date_of_joining",
+   "fieldtype": "Check",
+   "label": "Annualized: From Date of Joining"
+  },
+  {
+   "description": "Voucher totals (and net_sales per day if selected) summed for taxable income. If empty, basic pay, overtime, holiday pay, and incentive are used.",
+   "fieldname": "tax_base_income_items",
+   "fieldtype": "Table",
+   "label": "Tax Base Income Components",
+   "options": "Payroll Settings Tax Base Item"
+  },
+  {
+   "fieldname": "section_timekeeping",
+   "fieldtype": "Section Break",
+   "label": "Timekeeping"
+  },
+  {
+   "default": "0",
+   "description": "Round worked hours to nearest N minutes after computing gross duration (0 = off).",
+   "fieldname": "time_rounding_minutes",
+   "fieldtype": "Int",
+   "label": "Time Rounding (Minutes)"
+  },
+  {
+   "default": "0",
+   "description": "If employee clocked in (hours > 0) but worked less than this, pay at least this many hours (0 = off).",
+   "fieldname": "time_minimum_paid_hours",
+   "fieldtype": "Float",
+   "label": "Minimum Paid Hours If Clocked In"
+  },
+  {
+   "default": "1.25",
+   "description": "Used when Overtime document has no rate and Overtime Type rate is missing.",
+   "fieldname": "default_ot_multiplier",
+   "fieldtype": "Float",
+   "label": "Default OT Pay Multiplier"
+  },
+  {
+   "fieldname": "column_break_time",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Deduct unpaid break minutes per day when worked hours meet threshold below.",
+   "fieldname": "unpaid_break_minutes_per_day",
+   "fieldtype": "Int",
+   "label": "Unpaid Break (Minutes/Day)"
+  },
+  {
+   "default": "0",
+   "description": "Apply unpaid break only when gross hours for the day are at least this (0 = always if break > 0).",
+   "fieldname": "unpaid_break_apply_after_hours",
+   "fieldtype": "Float",
+   "label": "Apply Break After Hours"
+  },
+  {
+   "default": "0",
+   "fieldname": "apply_rest_day_sunday",
+   "fieldtype": "Check",
+   "label": "Apply Rest Day Premium on Sunday"
+  },
+  {
+   "default": "0",
+   "description": "Added to basic pay like holiday rate when Sunday and no Payroll Holiday applies.",
+   "fieldname": "rest_day_rate",
+   "fieldtype": "Float",
+   "label": "Rest Day Rate (Premium)"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_night_differential",
+   "fieldtype": "Check",
+   "label": "Enable Night Differential"
+  },
+  {
+   "default": "22:00:00",
+   "depends_on": "eval:doc.enable_night_differential",
+   "fieldname": "night_window_start",
+   "fieldtype": "Time",
+   "label": "Night Window Start"
+  },
+  {
+   "default": "06:00:00",
+   "depends_on": "eval:doc.enable_night_differential",
+   "fieldname": "night_window_end",
+   "fieldtype": "Time",
+   "label": "Night Window End"
+  },
+  {
+   "default": "0.1",
+   "depends_on": "eval:doc.enable_night_differential",
+   "description": "Extra pay per hour of night time as fraction of hourly rate (0.1 = 10%).",
+   "fieldname": "night_differential_multiplier",
+   "fieldtype": "Float",
+   "label": "Night Differential (Per Night Hour)"
+  },
+  {
+   "fieldname": "section_leave_accrual",
+   "fieldtype": "Section Break",
+   "label": "Leave Accrual (Scheduled)"
+  },
+  {
+   "fieldname": "leave_accrual_leave_type",
+   "fieldtype": "Link",
+   "label": "Accrual Leave Type",
+   "options": "Leave Type"
+  },
+  {
+   "default": "0",
+   "fieldname": "leave_accrual_days_per_year",
+   "fieldtype": "Float",
+   "label": "Accrual Days Per Year"
+  },
+  {
+   "default": "1",
+   "description": "Calendar month (1-12) when annual grant is posted by scheduler.",
+   "fieldname": "leave_accrual_grant_month",
+   "fieldtype": "Int",
+   "label": "Accrual Grant Month"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-04-04 00:00:00.000000",
+ "modified": "2026-04-09 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "PH Payroll",
  "name": "Payroll Settings",

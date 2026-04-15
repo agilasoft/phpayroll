@@ -7,6 +7,9 @@ def execute():
 	for name in workspace_names:
 		if frappe.db.exists("Workspace", name):
 			# Delete sidebar items linking to this workspace first (bypasses Workspace Sidebar doc lookup)
-			frappe.db.delete("Workspace Sidebar Item", {"link_to": name, "link_type": "Workspace"})
+			if frappe.db.table_exists("Workspace Sidebar Item"):
+				frappe.db.delete(
+					"Workspace Sidebar Item", {"link_to": name, "link_type": "Workspace"}
+				)
 			frappe.db.delete("Workspace", name)
 	frappe.db.commit()

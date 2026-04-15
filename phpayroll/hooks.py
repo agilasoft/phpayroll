@@ -102,23 +102,11 @@ app_license = "MIT"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"phpayroll.tasks.all"
-# 	],
-# 	"daily": [
-# 		"phpayroll.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"phpayroll.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"phpayroll.tasks.weekly"
-# 	]
-# 	"monthly": [
-# 		"phpayroll.tasks.monthly"
-# 	]
-# }
+scheduler_events = {
+	"monthly": [
+		"phpayroll.tasks.grant_scheduled_leave_accrual",
+	],
+}
 
 # Testing
 # -------

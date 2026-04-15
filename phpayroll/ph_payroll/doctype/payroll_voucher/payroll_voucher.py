@@ -13,29 +13,92 @@ RUN_TYPE_13TH = "13th Month"
 RUN_TYPE_SPECIAL = "Special"
 
 THIRTEENTH_MONTH_ITEM_FIELDS = frozenset({
-    "basic_pay", "overtime_pay", "holiday_pay", "incentive", "net_sales", "cash_advance",
+    "basic_pay", "overtime_pay", "holiday_pay", "night_diff_pay", "incentive", "net_sales", "cash_advance",
 })
 
 
 class PayrollVoucher(Document):
-    pass
+	def validate(self):
+		if frappe.flags.get("in_migrate") or frappe.flags.get("ignore_payroll_period_lock"):
+			return
+		from phpayroll.ph_payroll.doctype.payroll_period.payroll_period import (
+			can_bypass_payroll_period_lock,
+			is_payroll_period_locked,
+		)
+
+		if not self.date_from or not self.date_to or not self.branch:
+			return
+		if can_bypass_payroll_period_lock():
+			return
+		if is_payroll_period_locked(self.branch, self.date_from, self.date_to):
+			frappe.throw(
+				_("This payroll period is closed. Adjust Payroll Period or ask a System Manager."),
+				title=_("Payroll Locked"),
+			)
 
 @frappe.whitelist()
-def run_payroll(date_from, date_to, branch):
-    frappe.msgprint(f"Running payroll from {date_from} to {date_to} for branch {branch}", title="Payroll Run Start")
-    payroll_vouchers = []
+def run_payroll(date_from, date_to, branch, dry_run=False):
+	dry_run = cint(dry_run)
+	if dry_run:
+		return preview_payroll(date_from, date_to, branch)
 
-    employees = frappe.get_all('Employee', filters={'status': 'Active', 'reporting_branch': branch})
-    for employee in employees:
-        voucher = get_or_create_payroll_voucher(employee.name, date_from, date_to, branch, RUN_TYPE_REGULAR)
-        
-        if voucher:
-            populate_items(voucher)
-            voucher.save(ignore_permissions=True)
-            payroll_vouchers.append(voucher.name)
+	frappe.msgprint(
+		_("Running payroll from {0} to {1} for branch {2}").format(date_from, date_to, branch),
+		title=_("Payroll Run Start"),
+	)
+	payroll_vouchers = []
 
-    frappe.msgprint(f"Payroll run completed successfully. Vouchers created/updated: {', '.join(payroll_vouchers)}", title="Payroll Run Complete")
-    return f"Payroll run completed successfully. Vouchers created/updated: {', '.join(payroll_vouchers)}"
+	employees = frappe.get_all("Employee", filters={"status": "Active", "reporting_branch": branch})
+	for employee in employees:
+		voucher = get_or_create_payroll_voucher(employee.name, date_from, date_to, branch, RUN_TYPE_REGULAR)
+
+		if voucher:
+			populate_items(voucher)
+			voucher.save(ignore_permissions=True)
+			payroll_vouchers.append(voucher.name)
+
+	frappe.msgprint(
+		_("Payroll run completed. Vouchers: {0}").format(", ".join(payroll_vouchers) or _("none")),
+		title=_("Payroll Run Complete"),
+	)
+	return _("Payroll run completed. Vouchers: {0}").format(", ".join(payroll_vouchers) or _("none"))
+
+
+@frappe.whitelist()
+def preview_payroll(date_from, date_to, branch):
+	"""Compute payroll in memory per active employee; does not insert or update vouchers."""
+	frappe.flags.ignore_payroll_period_lock = True
+	try:
+		out = []
+		employees = frappe.get_all("Employee", filters={"status": "Active", "reporting_branch": branch})
+		for row in employees:
+			emp_doc = frappe.get_cached_doc("Employee", row.name)
+			v = frappe.new_doc("Payroll Voucher")
+			v.employee = row.name
+			v.employee_name = emp_doc.employee_name
+			v.date_from = date_from
+			v.date_to = date_to
+			v.branch = branch
+			v.run_type = RUN_TYPE_REGULAR
+			v.basic_hours = getattr(emp_doc, "basic_hours", None)
+			v.hourly_rate = getattr(emp_doc, "hourly_rate", None)
+			v.allow_incentive = getattr(emp_doc, "allow_incentive", None)
+			populate_items(v)
+			out.append(
+				{
+					"employee": v.employee,
+					"employee_name": v.employee_name,
+					"net_pay": flt(v.net_pay),
+					"total_basic_pay": flt(v.total_basic_pay),
+					"total_overtime_pay": flt(v.total_overtime_pay),
+					"total_holiday_pay": flt(v.total_holiday_pay),
+					"total_night_diff_pay": flt(getattr(v, "total_night_diff_pay", 0)),
+					"tax": flt(v.tax),
+				}
+			)
+		return out
+	finally:
+		frappe.flags.ignore_payroll_period_lock = False
    
 @frappe.whitelist()
 def recompute_payroll_voucher(voucher_name):
@@ -191,7 +254,7 @@ def populate_13th_month_voucher(voucher):
     voucher.set("items", [])
     voucher.set("deductions", [])
     for _field in (
-        "total_basic_pay", "total_overtime_pay", "total_holiday_pay", "total_incentive",
+        "total_basic_pay", "total_overtime_pay", "total_holiday_pay", "total_night_diff_pay", "total_incentive",
         "taxable_income", "tax", "sss", "philhealth", "hdmf", "less_cash_advance",
         "ss_er", "ss_ee", "ss_total", "wisp_er", "wisp_ee", "ec_er",
         "ph_ee", "ph_er", "hd_ee", "hd_er", "total_contribution",
@@ -222,6 +285,7 @@ def populate_items(voucher):
     total_overtime_pay = 0
     total_incentive = 0
     total_holiday_pay = 0
+    total_night_diff_pay = 0
     less_cash_advance = 0
 
     date_array = get_dates_between(date_from, date_to)
@@ -234,6 +298,7 @@ def populate_items(voucher):
         total_basic_pay += flt(item.basic_pay)
         total_holiday_pay += flt(item.holiday_pay)
         total_overtime_pay += flt(item.overtime_pay)
+        total_night_diff_pay += flt(getattr(item, "night_diff_pay", 0))
         total_incentive += flt(item.incentive)
         less_cash_advance += flt(item.cash_advance)
     
@@ -272,11 +337,24 @@ def populate_items(voucher):
     voucher.total_basic_pay = total_basic_pay + manual_basic_pay
     voucher.total_holiday_pay = total_holiday_pay + manual_holiday_pay
     voucher.total_overtime_pay = total_overtime_pay + manual_overtime_pay
+    voucher.total_night_diff_pay = total_night_diff_pay
     voucher.total_incentive = total_incentive + manual_incentive
     voucher.less_cash_advance = less_cash_advance + manual_cash_advance
     
     # Set basic calculations
-    net_pay = total_basic_pay + total_holiday_pay + total_overtime_pay + total_incentive - less_cash_advance + manual_basic_pay + manual_holiday_pay + manual_overtime_pay + manual_incentive - manual_cash_advance
+    net_pay = (
+        total_basic_pay
+        + total_holiday_pay
+        + total_overtime_pay
+        + total_night_diff_pay
+        + total_incentive
+        - less_cash_advance
+        + manual_basic_pay
+        + manual_holiday_pay
+        + manual_overtime_pay
+        + manual_incentive
+        - manual_cash_advance
+    )
     voucher.net_pay = net_pay  # Set the initial net pay before deductions
 
     # Clear prior contribution amounts so unchecked Employee flags do not leave stale values
@@ -304,12 +382,23 @@ def populate_items(voucher):
 
     # Deduct SSS, PhilHealth, and HDMF from net pay
     total_deductions = total_sss_deduction + total_philhealth_deduction + total_hdmf_deduction
-    voucher.net_pay = net_pay - total_deductions  # Final net pay after deductions
+    voucher.net_pay = net_pay - total_deductions  # Final net pay after statutory contributions
 
+    from phpayroll.ph_payroll.doctype.payroll_settings.payroll_settings import get_withholding_config
+    from phpayroll.ph_payroll.tax.withholding import (
+        METHOD_ANNUAL_TABLE,
+        METHOD_ANNUALIZED_YTD,
+        compute_withholding_tax,
+    )
 
-    # Save the voucher with updated values
-    voucher.save(ignore_permissions=True) 
-    
+    _wh = get_withholding_config()
+    if _wh["enabled"] and _wh["method"] in (METHOD_ANNUAL_TABLE, METHOD_ANNUALIZED_YTD):
+        compute_withholding_tax(voucher)
+        voucher.net_pay = flt(voucher.net_pay) - flt(voucher.tax)
+    elif not _wh["enabled"]:
+        voucher.taxable_income = 0
+        voucher.tax = 0
+
 def get_dates_between(start_date, end_date):
     dates = []
     current_date = getdate(start_date)
@@ -353,32 +442,20 @@ def fetch_time_and_sales(employee, date, branch, voucher):
         fetch_leave_and_populate_items(employee, date, branch, leave_doc, voucher)
         return
 
-    # Use regular time in/time out
-    time_in, time_out, time_in_branch, manual_time_in, manual_time_out = None, None, None, None, None
+    from phpayroll.ph_payroll.timekeeping.resolver import resolve_worked_hours_for_day
 
-    try:
-        time_in_response = frappe.db.get_value('Time In', {'employee': employee, 'date': date}, ['time', 'branch'])
-        if time_in_response:
-            time_in, time_in_branch = time_in_response
+    resolved = resolve_worked_hours_for_day(employee, date, branch, fetch_manual_attendance_time)
+    br = resolved.get("time_in_branch") or branch
+    fetch_cash_count_and_populate_items(
+        employee,
+        date,
+        br,
+        resolved["hours_worked"],
+        resolved.get("time_in"),
+        resolved.get("time_out"),
+        voucher,
+    )
 
-        time_out_response = frappe.db.get_value('Time Out', {'employee': employee, 'date': date}, 'time')
-        if time_out_response:
-            time_out = time_out_response
-
-        if not time_in:
-            manual_time_in = fetch_manual_attendance_time(employee, date, 'Time In', branch)
-            time_in = manual_time_in['time']
-            if not time_in_branch:
-                time_in_branch = manual_time_in['branch']
-
-        if not time_out:
-            manual_time_out = fetch_manual_attendance_time(employee, date, 'Time Out', branch)
-            time_out = manual_time_out['time']
-
-    except Exception as err:
-        frappe.msgprint(f"Error fetching time records: {err}", title="Error")
-
-    fetch_cash_count_and_populate_items(employee, date, time_in_branch, calculate_hours_worked(time_in, time_out), time_in, time_out, voucher)
 
 def calculate_hours_worked(timestamp_in, timestamp_out):
     if not timestamp_in or not timestamp_out:
@@ -389,48 +466,106 @@ def calculate_hours_worked(timestamp_in, timestamp_out):
     difference_in_hours = time_diff_in_hours(date_time_out, date_time_in)
     return round(difference_in_hours, 2)
 
+
+def _time_tuple(val):
+    if val is None:
+        return 0, 0
+    if hasattr(val, "hour"):
+        return int(val.hour), int(val.minute)
+    parts = str(val).split(":")
+    try:
+        return int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
+    except (ValueError, IndexError):
+        return 0, 0
+
+
+def compute_overtime_pay_for_day(employee, date, hourly_rate, eligible_hours_cap, default_mult):
+    from phpayroll.ph_payroll.timekeeping.policy import normalize_ot_multiplier
+
+    rows = frappe.db.sql(
+        """
+        SELECT ot.hours AS hours,
+            COALESCE(NULLIF(ot.overtime_rate, 0), typ.rate, NULL) AS rate_src
+        FROM `tabOvertime` ot
+        LEFT JOIN `tabOvertime Type` typ ON typ.name = ot.overtime_type
+        WHERE ot.employee = %(emp)s AND ot.date = %(d)s AND ot.docstatus = 1
+        """,
+        {"emp": employee, "d": date},
+        as_dict=True,
+    )
+    if not rows:
+        return 0.0, 0.0
+    total_h = sum(flt(r.get("hours")) for r in rows)
+    if total_h <= 0:
+        return 0.0, 0.0
+    cap = min(total_h, max(0.0, flt(eligible_hours_cap)))
+    scale = cap / total_h if total_h else 0.0
+    pay = 0.0
+    for r in rows:
+        h = flt(r.get("hours")) * scale
+        m = normalize_ot_multiplier(r.get("rate_src"), default_mult)
+        pay += h * flt(hourly_rate) * m
+    return round(cap, 4), round(pay, 4)
+
+
 def fetch_cash_count_and_populate_items(employee, date, branch, hours_worked, time_in, time_out, voucher):
     try:
+        from phpayroll.ph_payroll.doctype.payroll_settings.payroll_settings import get_timekeeping_settings
+
+        cfg = get_timekeeping_settings()
         net_sales = get_cash_count_net_sales(branch, date)
 
-        # Basic pay computation
         basic_hours = voucher.basic_hours or 0
         hourly_rate = voucher.hourly_rate or 0
-        worked_hours_for_pay = min(hours_worked, basic_hours)
+        worked_hours_for_pay = min(flt(hours_worked), basic_hours)
         basic_pay = worked_hours_for_pay * hourly_rate
 
-        # Holiday pay
-        holiday_rate = get_holiday_rate(date)
-        holiday_pay = worked_hours_for_pay * hourly_rate * holiday_rate if holiday_rate else 0
+        h_rate = get_holiday_rate(date)
+        holiday_mult = flt(h_rate) if h_rate else 0.0
+        if not holiday_mult and cint(cfg.get("apply_rest_day_sunday")):
+            if getdate(date).weekday() == 6:
+                holiday_mult = flt(cfg.get("rest_day_rate"))
 
-        # Overtime
-        ot_hours_fetched = fetch_overtime_hours(employee, date)
-        ot_difference = hours_worked - basic_hours
-        ot_hours = min(ot_hours_fetched, max(ot_difference, 0))
-        overtime_pay = ot_hours * hourly_rate * 1.25
+        holiday_pay = worked_hours_for_pay * hourly_rate * holiday_mult if holiday_mult else 0
 
-        # Other compensations
+        ot_cap = max(0.0, flt(hours_worked) - basic_hours)
+        default_m = flt(cfg.get("default_ot_multiplier")) or 1.25
+        ot_hours, overtime_pay = compute_overtime_pay_for_day(
+            employee, date, hourly_rate, ot_cap, default_m
+        )
+
+        night_diff_pay = 0.0
+        if time_in and time_out and cint(cfg.get("enable_night_differential")):
+            from phpayroll.ph_payroll.timekeeping.policy import count_night_hours
+
+            sh, sm = _time_tuple(cfg.get("night_window_start"))
+            eh, em = _time_tuple(cfg.get("night_window_end"))
+            nh = count_night_hours(
+                get_datetime(time_in), get_datetime(time_out), sh, sm, eh, em
+            )
+            night_diff_pay = nh * flt(hourly_rate) * flt(cfg.get("night_differential_multiplier"))
+
         cash_advance = fetch_cash_advance(employee, date, voucher)
         incentive = fetch_incentive(branch, net_sales)
 
-        # Populate item
         item = {
-            'date': date,
-            'time_in': time_in,
-            'time_out': time_out,
-            'hours_worked': hours_worked,
-            'net_sales': net_sales,
-            'basic_pay': basic_pay,
-            'holiday_pay': holiday_pay,
-            'ot_hours': ot_hours,
-            'overtime_pay': overtime_pay,
-            'cash_advance': cash_advance,
-            'incentive': incentive
+            "date": date,
+            "time_in": time_in,
+            "time_out": time_out,
+            "hours_worked": hours_worked,
+            "net_sales": net_sales,
+            "basic_pay": basic_pay,
+            "holiday_pay": holiday_pay,
+            "ot_hours": ot_hours,
+            "overtime_pay": overtime_pay,
+            "night_diff_pay": night_diff_pay,
+            "cash_advance": cash_advance,
+            "incentive": incentive,
         }
-        voucher.append('items', item)
+        voucher.append("items", item)
 
     except Exception as err:
-        frappe.msgprint(f"Error in payroll calculation: {err}", title="Error")
+        frappe.msgprint(_("Error in payroll calculation: {0}").format(err), title=_("Error"))
 
 
 
@@ -463,6 +598,9 @@ def fetch_official_business_and_populate_items(employee, date, branch, official_
     Uses number_of_days to calculate basic pay instead of hours worked
     """
     try:
+        from phpayroll.ph_payroll.doctype.payroll_settings.payroll_settings import get_timekeeping_settings
+
+        cfg = get_timekeeping_settings()
         net_sales = get_cash_count_net_sales(branch, date)
 
         # Basic pay computation based on Official Business number_of_days
@@ -475,9 +613,12 @@ def fetch_official_business_and_populate_items(employee, date, branch, official_
         worked_hours_for_pay = basic_hours * number_of_days
         basic_pay = worked_hours_for_pay * hourly_rate
 
-        # Holiday pay
-        holiday_rate = get_holiday_rate(date)
-        holiday_pay = worked_hours_for_pay * hourly_rate * holiday_rate if holiday_rate else 0
+        h_rate = get_holiday_rate(date)
+        holiday_mult = flt(h_rate) if h_rate else 0.0
+        if not holiday_mult and cint(cfg.get("apply_rest_day_sunday")):
+            if getdate(date).weekday() == 6:
+                holiday_mult = flt(cfg.get("rest_day_rate"))
+        holiday_pay = worked_hours_for_pay * hourly_rate * holiday_mult if holiday_mult else 0
 
         # No overtime for Official Business days
         ot_hours = 0
@@ -527,6 +668,7 @@ def fetch_official_business_and_populate_items(employee, date, branch, official_
             'holiday_pay': holiday_pay,
             'ot_hours': ot_hours,
             'overtime_pay': overtime_pay,
+            'night_diff_pay': 0,
             'cash_advance': cash_advance,
             'incentive': incentive
         }
@@ -555,22 +697,33 @@ def fetch_leave(employee, date):
 
 def fetch_leave_and_populate_items(employee, date, branch, leave_doc, voucher):
     """
-    Populate payroll items from Leave (paid leave), same basic/holiday logic as Official Business.
-    Credits are enforced on Leave submit; payroll only considers submitted leaves.
+    Populate payroll items from Leave (paid or unpaid). Unpaid: zero salary, row kept for audit.
     """
     try:
+        from phpayroll.ph_payroll.doctype.leave.leave import leave_type_is_paid
+        from phpayroll.ph_payroll.doctype.payroll_settings.payroll_settings import get_timekeeping_settings
+
+        cfg = get_timekeeping_settings()
         net_sales = get_cash_count_net_sales(branch, date)
 
         basic_hours = voucher.basic_hours or 0
         hourly_rate = voucher.hourly_rate or 0
-        # Treat missing number_of_days as 1 for legacy Leave rows created before this field existed
         number_of_days = flt(getattr(leave_doc, "number_of_days", None)) or 1
 
-        worked_hours_for_pay = basic_hours * number_of_days
-        basic_pay = worked_hours_for_pay * hourly_rate
-
-        holiday_rate = get_holiday_rate(date)
-        holiday_pay = worked_hours_for_pay * hourly_rate * holiday_rate if holiday_rate else 0
+        paid = leave_type_is_paid(leave_doc.type)
+        if paid:
+            worked_hours_for_pay = basic_hours * number_of_days
+            basic_pay = worked_hours_for_pay * hourly_rate
+            h_rate = get_holiday_rate(date)
+            holiday_mult = flt(h_rate) if h_rate else 0.0
+            if not holiday_mult and cint(cfg.get("apply_rest_day_sunday")):
+                if getdate(date).weekday() == 6:
+                    holiday_mult = flt(cfg.get("rest_day_rate"))
+            holiday_pay = worked_hours_for_pay * hourly_rate * holiday_mult if holiday_mult else 0
+        else:
+            worked_hours_for_pay = 0
+            basic_pay = 0
+            holiday_pay = 0
 
         ot_hours = 0
         overtime_pay = 0
@@ -588,6 +741,7 @@ def fetch_leave_and_populate_items(employee, date, branch, leave_doc, voucher):
             "holiday_pay": holiday_pay,
             "ot_hours": ot_hours,
             "overtime_pay": overtime_pay,
+            "night_diff_pay": 0,
             "cash_advance": cash_advance,
             "incentive": incentive,
         }
@@ -627,7 +781,7 @@ def fetch_cash_advance(employee, date, voucher=None):
                 total_cash_advance += flt(liquidation.amount)
                 
                 # If voucher is provided, add to deductions table
-                if voucher and liquidation.amount > 0:
+                if voucher and flt(liquidation.amount) > 0:
                     # Get cash advance details
                     ca_doc = frappe.get_doc('Cash Advance', doc.name)
                     
@@ -644,7 +798,7 @@ def fetch_cash_advance(employee, date, voucher=None):
                         deduction.reference_no = doc.name
                         deduction.date = date
                         deduction.type = ca_doc.type
-                        deduction.amount = liquidation.amount
+                        deduction.amount = flt(liquidation.amount)
                         deduction.remarks = f"{ca_doc.purpose} - Liquidation Amount: {liquidation.amount}"
                         deductions_added += 1
                         frappe.msgprint(f"Added deduction: {doc.name} on {date} for {liquidation.amount}", title="Debug")
@@ -676,7 +830,7 @@ def fetch_cash_advance_details(employee, date):
             )
             
             for liquidation in liquidations:
-                if liquidation.amount > 0:
+                if flt(liquidation.amount) > 0:
                     cash_advance_details.append({
                         'reference_no': ca.name,
                         'date': liquidation.date,
@@ -769,7 +923,7 @@ def populate_all_cash_advance_deductions(voucher, employee, date_from, date_to):
                     liquidations = all_liquidations_filtered
             
             for liquidation in liquidations:
-                if liquidation.amount > 0:
+                if flt(liquidation.amount) > 0:
                     # Check if this deduction already exists to avoid duplicates
                     existing_deduction = None
                     for existing in voucher.deductions:
@@ -1006,15 +1160,15 @@ def get_cash_advance_summary(employee, date_from, date_to):
             )
             
             for liquidation in liquidations:
-                if liquidation.amount > 0:
+                if flt(liquidation.amount) > 0:
                     summary.append({
                         'reference_no': ca.name,
                         'date': liquidation.date,
                         'type': ca.type,
                         'purpose': ca.purpose,
-                        'liquidation_amount': liquidation.amount
+                        'liquidation_amount': flt(liquidation.amount)
                     })
-                    total_liquidations += liquidation.amount
+                    total_liquidations += flt(liquidation.amount)
         
         return {
             'cash_advances': summary,

@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "creation": "2026-04-09 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "punch_type",
+  "punch_time"
+ ],
+ "fields": [
+  {
+   "fieldname": "punch_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "In\nOut",
+   "reqd": 1
+  },
+  {
+   "fieldname": "punch_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Time",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-04-09 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Attendance Punch",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "idx",
+ "sort_order": "ASC",
+ "track_changes": 1
+}

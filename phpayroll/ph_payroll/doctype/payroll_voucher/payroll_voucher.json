@@ -24,6 +24,7 @@
   "total_basic_pay",
   "total_overtime_pay",
   "total_holiday_pay",
+  "total_night_diff_pay",
   "total_incentive",
   "thirteenth_month_pay",
   "taxable_income",
@@ -165,6 +166,12 @@
    "fieldname": "total_holiday_pay",
    "fieldtype": "Currency",
    "label": "Total Holiday Pay",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_night_diff_pay",
+   "fieldtype": "Currency",
+   "label": "Total Night Differential",
    "read_only": 1
   },
   {

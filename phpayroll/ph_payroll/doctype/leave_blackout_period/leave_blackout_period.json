@@ -1,31 +1,38 @@
 {
  "actions": [],
- "allow_rename": 0,
- "autoname": "field:type_name",
- "creation": "2026-04-09 00:00:00.000000",
+ "autoname": "hash",
+ "creation": "2026-04-09 12:00:00.000000",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "type_name",
-  "is_paid",
+  "branch",
+  "date_from",
+  "date_to",
   "description"
  ],
  "fields": [
   {
-   "fieldname": "type_name",
-   "fieldtype": "Data",
+   "description": "Leave blank to block all branches.",
+   "fieldname": "branch",
+   "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Type Name",
-   "reqd": 1,
-   "unique": 1
+   "label": "Branch",
+   "options": "Branch"
   },
   {
-   "default": "1",
-   "description": "If unchecked, submit does not consume leave credits and payroll pays 0 for that day.",
-   "fieldname": "is_paid",
-   "fieldtype": "Check",
-   "label": "Paid Leave"
+   "fieldname": "date_from",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date_to",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date To",
+   "reqd": 1
   },
   {
    "fieldname": "description",
@@ -35,10 +42,10 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-09 00:00:00.000000",
+ "modified": "2026-04-09 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "PH Payroll",
- "name": "Leave Type",
+ "name": "Leave Blackout Period",
  "owner": "Administrator",
  "permissions": [
   {
@@ -54,17 +61,15 @@
    "write": 1
   },
   {
-   "create": 0,
-   "delete": 0,
+   "create": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Belizzo Staff",
-   "select": 1,
+   "role": "HR User",
    "share": 1,
-   "write": 0
+   "write": 1
   }
  ],
  "sort_field": "modified",
