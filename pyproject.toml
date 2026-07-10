@@ -11,9 +11,6 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "frappe",
-]
 
 [project.optional-dependencies]
 dev = []
@@ -21,3 +18,6 @@ dev = []
 [tool.setuptools]
 packages = {find = {}}
 include-package-data = true
+
+[tool.bench.frappe-dependencies]
+frappe = ">=16.0.0,<17.0.0"
