@@ -536,11 +536,15 @@ def fetch_cash_count_and_populate_items(employee, date, branch, hours_worked, ti
 
         basic_hours = voucher.basic_hours or 0
         hourly_rate = voucher.hourly_rate or 0
-        worked_hours_for_pay = min(flt(hours_worked), basic_hours)
-        basic_pay = worked_hours_for_pay * hourly_rate
-
         holiday_mult = resolve_holiday_multiplier(date, cfg)
-        holiday_pay = compute_holiday_pay(worked_hours_for_pay, hourly_rate, holiday_mult)
+        is_declared_holiday = get_holiday_rate(date) is not None
+        display_hours, basic_pay, holiday_pay = compute_daily_basic_and_holiday_pay(
+            hours_worked,
+            basic_hours,
+            hourly_rate,
+            holiday_mult,
+            is_declared_holiday,
+        )
 
         ot_cap = max(0.0, flt(hours_worked) - basic_hours)
         default_m = flt(cfg.get("default_ot_multiplier")) or 1.25
@@ -566,7 +570,7 @@ def fetch_cash_count_and_populate_items(employee, date, branch, hours_worked, ti
             "date": date,
             "time_in": time_in,
             "time_out": time_out,
-            "hours_worked": hours_worked,
+            "hours_worked": display_hours,
             "net_sales": net_sales,
             "basic_pay": basic_pay,
             "holiday_pay": holiday_pay,
@@ -1420,3 +1424,33 @@ def compute_holiday_pay(worked_hours_for_pay, hourly_rate, holiday_mult):
     if not holiday_mult or not worked_hours_for_pay or not hourly_rate:
         return 0.0
     return flt(worked_hours_for_pay) * flt(hourly_rate) * flt(holiday_mult)
+
+
+def compute_daily_basic_and_holiday_pay(
+    hours_worked,
+    basic_hours,
+    hourly_rate,
+    holiday_mult,
+    is_declared_holiday,
+):
+    """Compute basic and holiday pay for one calendar day.
+
+    Worked days use actual hours (capped at basic_hours) plus any holiday premium.
+    Unworked declared holidays still pay one full day (basic_hours) as holiday pay.
+    """
+    hours_worked = flt(hours_worked)
+    basic_hours = flt(basic_hours)
+    hourly_rate = flt(hourly_rate)
+    holiday_mult = flt(holiday_mult)
+
+    if hours_worked > 0:
+        payable_hours = min(hours_worked, basic_hours) if basic_hours else hours_worked
+        basic_pay = payable_hours * hourly_rate
+        holiday_pay = compute_holiday_pay(payable_hours, hourly_rate, holiday_mult)
+        return hours_worked, basic_pay, holiday_pay
+
+    if is_declared_holiday and basic_hours > 0 and hourly_rate > 0:
+        day_pay = basic_hours * hourly_rate
+        return basic_hours, 0.0, day_pay
+
+    return hours_worked, 0.0, 0.0
