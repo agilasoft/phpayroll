@@ -263,6 +263,23 @@ def populate_13th_month_voucher(voucher):
     voucher.thirteenth_month_pay = thirteenth
     voucher.net_pay = thirteenth
 
+def sync_employee_pay_fields(voucher):
+    """Refresh pay inputs from Employee so server-side payroll runs have rates."""
+    if not voucher.employee:
+        return
+    row = frappe.db.get_value(
+        "Employee",
+        voucher.employee,
+        ["basic_hours", "hourly_rate", "allow_incentive"],
+        as_dict=True,
+    )
+    if not row:
+        return
+    voucher.basic_hours = row.basic_hours
+    voucher.hourly_rate = row.hourly_rate
+    voucher.allow_incentive = row.allow_incentive
+
+
 def populate_items(voucher):
     run_type = getattr(voucher, "run_type", None) or RUN_TYPE_REGULAR
     if run_type == RUN_TYPE_13TH:
@@ -277,6 +294,8 @@ def populate_items(voucher):
 
     if not date_from or not date_to or not employee:
         frappe.throw(_("Please ensure Employee, Date From, and Date To are filled."))
+
+    sync_employee_pay_fields(voucher)
 
     voucher.set('items', [])
     voucher.set('deductions', [])  # Clear existing deductions
@@ -520,13 +539,8 @@ def fetch_cash_count_and_populate_items(employee, date, branch, hours_worked, ti
         worked_hours_for_pay = min(flt(hours_worked), basic_hours)
         basic_pay = worked_hours_for_pay * hourly_rate
 
-        h_rate = get_holiday_rate(date)
-        holiday_mult = flt(h_rate) if h_rate else 0.0
-        if not holiday_mult and cint(cfg.get("apply_rest_day_sunday")):
-            if getdate(date).weekday() == 6:
-                holiday_mult = flt(cfg.get("rest_day_rate"))
-
-        holiday_pay = worked_hours_for_pay * hourly_rate * holiday_mult if holiday_mult else 0
+        holiday_mult = resolve_holiday_multiplier(date, cfg)
+        holiday_pay = compute_holiday_pay(worked_hours_for_pay, hourly_rate, holiday_mult)
 
         ot_cap = max(0.0, flt(hours_worked) - basic_hours)
         default_m = flt(cfg.get("default_ot_multiplier")) or 1.25
@@ -613,12 +627,8 @@ def fetch_official_business_and_populate_items(employee, date, branch, official_
         worked_hours_for_pay = basic_hours * number_of_days
         basic_pay = worked_hours_for_pay * hourly_rate
 
-        h_rate = get_holiday_rate(date)
-        holiday_mult = flt(h_rate) if h_rate else 0.0
-        if not holiday_mult and cint(cfg.get("apply_rest_day_sunday")):
-            if getdate(date).weekday() == 6:
-                holiday_mult = flt(cfg.get("rest_day_rate"))
-        holiday_pay = worked_hours_for_pay * hourly_rate * holiday_mult if holiday_mult else 0
+        holiday_mult = resolve_holiday_multiplier(date, cfg)
+        holiday_pay = compute_holiday_pay(worked_hours_for_pay, hourly_rate, holiday_mult)
 
         # No overtime for Official Business days
         ot_hours = 0
@@ -714,12 +724,8 @@ def fetch_leave_and_populate_items(employee, date, branch, leave_doc, voucher):
         if paid:
             worked_hours_for_pay = basic_hours * number_of_days
             basic_pay = worked_hours_for_pay * hourly_rate
-            h_rate = get_holiday_rate(date)
-            holiday_mult = flt(h_rate) if h_rate else 0.0
-            if not holiday_mult and cint(cfg.get("apply_rest_day_sunday")):
-                if getdate(date).weekday() == 6:
-                    holiday_mult = flt(cfg.get("rest_day_rate"))
-            holiday_pay = worked_hours_for_pay * hourly_rate * holiday_mult if holiday_mult else 0
+            holiday_mult = resolve_holiday_multiplier(date, cfg)
+            holiday_pay = compute_holiday_pay(worked_hours_for_pay, hourly_rate, holiday_mult)
         else:
             worked_hours_for_pay = 0
             basic_pay = 0
@@ -1381,7 +1387,36 @@ def get_monthly_basic_pay_from_items(employee, date_from):
     return monthly_basic_pay
 
 def get_holiday_rate(date):
-    rate = frappe.db.get_value("Payroll Holiday", {"date": getdate(date)}, "rate")
-    if rate is None:
+    """Return premium multiplier for a calendar date from Payroll Holiday / Holiday Type."""
+    rows = frappe.db.sql(
+        """
+        SELECT COALESCE(NULLIF(ph.rate, 0), ht.rate) AS rate
+        FROM `tabPayroll Holiday` ph
+        LEFT JOIN `tabHoliday Type` ht ON ht.name = ph.holiday_type
+        WHERE ph.date = %s
+        ORDER BY ph.modified DESC
+        LIMIT 1
+        """,
+        (getdate(date),),
+        as_dict=True,
+    )
+    if not rows:
         return None
-    return flt(rate)
+    rate = flt(rows[0].get("rate"))
+    return rate if rate > 0 else None
+
+
+def resolve_holiday_multiplier(date, cfg):
+    """Holiday premium multiplier for a date, with optional Sunday rest-day fallback."""
+    holiday_mult = flt(get_holiday_rate(date))
+    if holiday_mult > 0:
+        return holiday_mult
+    if cint(cfg.get("apply_rest_day_sunday")) and getdate(date).weekday() == 6:
+        return flt(cfg.get("rest_day_rate"))
+    return 0.0
+
+
+def compute_holiday_pay(worked_hours_for_pay, hourly_rate, holiday_mult):
+    if not holiday_mult or not worked_hours_for_pay or not hourly_rate:
+        return 0.0
+    return flt(worked_hours_for_pay) * flt(hourly_rate) * flt(holiday_mult)

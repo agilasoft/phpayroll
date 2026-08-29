@@ -1,3 +1,4 @@
 phpayroll.patches.set_payroll_voucher_run_type_default
 phpayroll.patches.v1_0.remove_hr_workspaces
 phpayroll.patches.ensure_leave_types
+phpayroll.patches.backfill_payroll_holiday_rates
