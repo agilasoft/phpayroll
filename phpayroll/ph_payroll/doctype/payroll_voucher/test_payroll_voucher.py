@@ -13,20 +13,20 @@ def _flt(val):
 		return 0.0
 
 
-class TestPayrollVoucher(unittest.TestCase):
-	def test_holiday_rate_lookup_uses_scalar_fieldname(self):
+class TestHolidayRateLookup(unittest.TestCase):
+	def test_scalar_rate_converts_to_float(self):
 		"""Regression: frappe.db.get_value with ['rate'] returns a tuple that flt() cannot parse."""
-		scalar_rate = 1.5
-		tuple_rate = (1.5,)
+		self.assertEqual(_flt(1.5), 1.5)
+		self.assertEqual(_flt((1.5,)), 0.0)
 
-		self.assertEqual(_flt(scalar_rate), 1.5)
-		self.assertEqual(_flt(tuple_rate), 0.0)
-
-		holiday_mult = _flt(scalar_rate) if scalar_rate else 0.0
-		broken_mult = _flt(tuple_rate) if tuple_rate else 0.0
-
-		self.assertEqual(holiday_mult, 1.5)
-		self.assertEqual(broken_mult, 0.0)
+	def test_compute_holiday_pay_formula(self):
+		worked_hours_for_pay = 8
+		hourly_rate = 100
+		holiday_mult = 1.0
+		holiday_pay = (
+			worked_hours_for_pay * hourly_rate * holiday_mult if holiday_mult else 0
+		)
+		self.assertEqual(holiday_pay, 800.0)
 
 
 if __name__ == "__main__":
