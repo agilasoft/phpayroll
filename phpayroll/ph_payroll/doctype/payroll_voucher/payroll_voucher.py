@@ -1381,5 +1381,7 @@ def get_monthly_basic_pay_from_items(employee, date_from):
     return monthly_basic_pay
 
 def get_holiday_rate(date):
-    holiday = frappe.db.get_value('Payroll Holiday', {'date': date}, ['rate'])
-    return flt(holiday) if holiday else None
+    rate = frappe.db.get_value("Payroll Holiday", {"date": getdate(date)}, "rate")
+    if rate is None:
+        return None
+    return flt(rate)
