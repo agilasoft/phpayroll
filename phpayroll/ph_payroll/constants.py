@@ -1,0 +1,51 @@
+# Copyright (c) 2026, Agilasoft Technologies Inc. and contributors
+# For license information, please see license.txt
+
+"""Salary component names used by the HRMS overlay and statutory filings."""
+
+BASIC_PAY = "Basic Pay"
+OVERTIME_PAY = "Overtime Pay"
+HOLIDAY_PAY = "Holiday Pay"
+INCENTIVE = "Incentive"
+THIRTEENTH_MONTH = "13th Month"
+SSS_EE = "SSS"
+PHILHEALTH_EE = "PhilHealth"
+PAGIBIG_EE = "Pag-IBIG"
+WITHHOLDING_TAX = "Withholding Tax"
+CASH_ADVANCE = "Cash Advance"
+
+SSS_ER = "SSS ER"
+WISP_EE = "WISP EE"
+WISP_ER = "WISP ER"
+EC_ER = "EC ER"
+PHILHEALTH_ER = "PhilHealth ER"
+PAGIBIG_ER = "Pag-IBIG ER"
+
+EARNING_COMPONENTS = (BASIC_PAY, OVERTIME_PAY, HOLIDAY_PAY, INCENTIVE, THIRTEENTH_MONTH)
+DEDUCTION_COMPONENTS = (SSS_EE, PHILHEALTH_EE, PAGIBIG_EE, WITHHOLDING_TAX, CASH_ADVANCE, WISP_EE)
+EMPLOYER_COMPONENTS = (SSS_ER, WISP_ER, EC_ER, PHILHEALTH_ER, PAGIBIG_ER)
+
+COMPONENT_ABBR = {
+	BASIC_PAY: "BP",
+	OVERTIME_PAY: "OT",
+	HOLIDAY_PAY: "HP",
+	INCENTIVE: "INC",
+	THIRTEENTH_MONTH: "TM",
+	SSS_EE: "SSS",
+	PHILHEALTH_EE: "PHIC",
+	PAGIBIG_EE: "HDMF",
+	WITHHOLDING_TAX: "WHT",
+	CASH_ADVANCE: "CA",
+	SSS_ER: "SSSER",
+	WISP_EE: "WISPEE",
+	WISP_ER: "WISPER",
+	EC_ER: "ECER",
+	PHILHEALTH_ER: "PHICER",
+	PAGIBIG_ER: "HDMFER",
+}
+
+PH_SALARY_STRUCTURE = "PH Bimonthly"
+THIRTEENTH_MONTH_CAP = 90_000
+
+ENGINE_LEGACY = "PH Payroll Voucher"
+ENGINE_HRMS = "Frappe HR Salary Slip"

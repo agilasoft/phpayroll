@@ -1,0 +1,77 @@
+{
+  "group": "PH Statutory Forms",
+  "forms": [
+    {
+      "form_number": "1601C",
+      "pdf_filename": "bir_form_1601c_fillable.pdf",
+      "source_pdf_filename": "bir_form_1601c_january_2018_encs.pdf",
+      "note": "Official BIR January 2018 (ENCS) PDF published as 1601C final Jan 2018 with DPA; AcroForm fields added via pdffiller Design Fields conversion. Filled from BIR 1601-C report.",
+      "templates": [
+        {
+          "title": "BIR Form 1601-C",
+          "reference_doctype": "PH Payroll Settings"
+        }
+      ]
+    },
+    {
+      "form_number": "1604C",
+      "pdf_filename": "bir_form_1604c_fillable.pdf",
+      "source_pdf_filename": "bir_form_1604c_january_2018_encs.pdf",
+      "note": "Official BIR January 2018 PDF published as 1604-C Jan 2018 Final; AcroForm fields added via pdffiller Design Fields conversion. Alphalist employees remain in the DAT attachment.",
+      "templates": [
+        {
+          "title": "BIR Form 1604-C",
+          "reference_doctype": "PH Payroll Settings"
+        }
+      ]
+    },
+    {
+      "form_number": "2316",
+      "pdf_filename": "bir_form_2316_fillable.pdf",
+      "source_pdf_filename": "bir_form_2316_september_2021_encs.pdf",
+      "note": "Official BIR September 2021 (ENCS) PDF; AcroForm fields added via pdffiller Design Fields conversion. Filled from Employee.",
+      "templates": [
+        {
+          "title": "BIR Form 2316",
+          "reference_doctype": "Employee"
+        }
+      ]
+    },
+    {
+      "form_number": "SSS_R3",
+      "pdf_filename": "sss_form_r3_fillable.pdf",
+      "source_pdf_filename": "sss_form_r3_rev_08_99.pdf",
+      "note": "Official SSS R-3 Contribution Collection List (REV. 08-99). Employee DAT remains the My.SSS / R3 File Generator upload.",
+      "templates": [
+        {
+          "title": "SSS Form R-3",
+          "reference_doctype": "PH Payroll Settings"
+        }
+      ]
+    },
+    {
+      "form_number": "PHIC_RF1",
+      "pdf_filename": "phic_form_rf1_fillable.pdf",
+      "source_pdf_filename": "phic_form_rf1_february_2014.pdf",
+      "note": "Official PhilHealth RF-1 Employer’s Remittance Report (Revised February 2014). CSV remains the EPRS-style upload.",
+      "templates": [
+        {
+          "title": "PhilHealth RF-1",
+          "reference_doctype": "PH Payroll Settings"
+        }
+      ]
+    },
+    {
+      "form_number": "HDMF_MCRF",
+      "pdf_filename": "hdmf_form_mcrf_fillable.pdf",
+      "source_pdf_filename": "hdmf_form_mcrf_pff053_v03.pdf",
+      "note": "Official Pag-IBIG HQP-PFF-053 Membership Savings Remittance Form (V03, 10/2016). CSV remains the Virtual Pag-IBIG MCRF upload.",
+      "templates": [
+        {
+          "title": "Pag-IBIG MCRF",
+          "reference_doctype": "PH Payroll Settings"
+        }
+      ]
+    }
+  ]
+}

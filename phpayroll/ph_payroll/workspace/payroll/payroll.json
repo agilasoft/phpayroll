@@ -1,7 +1,7 @@
 {
  "app": "phpayroll",
  "charts": [],
- "content": "[{\"id\":\"hfH1u_sNrI\",\"type\":\"header\",\"data\":{\"text\":\"<span style=\\\"font-size: 16px;\\\">Time Management</span>\",\"col\":12}},{\"id\":\"cjMLN7CAeH\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Time In\",\"col\":3}},{\"id\":\"NU6CrDa1ZU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Time Out\",\"col\":3}},{\"id\":\"N2dqGrNlEI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Manual Attendance\",\"col\":3}},{\"id\":\"q7TtruwPwv\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Overtime\",\"col\":3}},{\"id\":\"o8QOS-h1a7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Official Business\",\"col\":3}},{\"id\":\"yjC2l8F7c-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Cash Advance\",\"col\":3}},{\"id\":\"nfAOfGydth\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"YqcX4cCHC7\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"id\":\"0tjMWcszv9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pay Slip\",\"col\":3}}]",
+ "content": "[{\"id\":\"hfH1u_sNrI\",\"type\":\"header\",\"data\":{\"text\":\"<span style=\\\"font-size: 16px;\\\">Time Management</span>\",\"col\":12}},{\"id\":\"cjMLN7CAeH\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Time In\",\"col\":3}},{\"id\":\"NU6CrDa1ZU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Time Out\",\"col\":3}},{\"id\":\"N2dqGrNlEI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Manual Attendance\",\"col\":3}},{\"id\":\"q7TtruwPwv\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Overtime\",\"col\":3}},{\"id\":\"o8QOS-h1a7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Official Business\",\"col\":3}},{\"id\":\"attReqOB\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Attendance Request\",\"col\":3}},{\"id\":\"yjC2l8F7c-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Cash Advance\",\"col\":3}},{\"id\":\"nfAOfGydth\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"statHdr\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Statutory Reports</b></span>\",\"col\":12}},{\"id\":\"r1601c\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"BIR 1601-C\",\"col\":3}},{\"id\":\"r1604c\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"BIR 1604-C\",\"col\":3}},{\"id\":\"rsss\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"SSS R-3\",\"col\":3}},{\"id\":\"rphic\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"PhilHealth RF-1\",\"col\":3}},{\"id\":\"rhdmf\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pag-IBIG MCRF\",\"col\":3}},{\"id\":\"rsettings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"PH Payroll Settings\",\"col\":3}},{\"id\":\"nfAOfGydti\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"YqcX4cCHC7\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"id\":\"0tjMWcszv9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pay Slip\",\"col\":3}}]",
  "creation": "2026-01-29 10:22:11.037711",
  "custom_blocks": [],
  "docstatus": 0,
@@ -15,7 +15,7 @@
  "label": "Payroll",
  "link_type": "DocType",
  "links": [],
- "modified": "2026-01-29 10:32:55.362217",
+ "modified": "2026-09-07 16:00:00.000000",
  "modified_by": "Administrator",
  "module": "PH Payroll",
  "name": "Payroll",
@@ -70,6 +70,14 @@
   {
    "color": "Grey",
    "doc_view": "List",
+   "label": "Attendance Request",
+   "link_to": "Attendance Request",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
    "label": "Cash Advance",
    "link_to": "Cash Advance",
    "stats_filter": "[]",
@@ -81,6 +89,53 @@
    "label": "Pay Slip",
    "link_to": "Payroll Voucher",
    "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "label": "BIR 1601-C",
+   "link_to": "BIR 1601-C",
+   "report_ref_doctype": "Employee",
+   "stats_filter": "[]",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "label": "BIR 1604-C",
+   "link_to": "BIR 1604-C",
+   "report_ref_doctype": "Employee",
+   "stats_filter": "[]",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "label": "SSS R-3",
+   "link_to": "SSS R-3",
+   "report_ref_doctype": "Employee",
+   "stats_filter": "[]",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "label": "PhilHealth RF-1",
+   "link_to": "PhilHealth RF-1",
+   "report_ref_doctype": "Employee",
+   "stats_filter": "[]",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "label": "Pag-IBIG MCRF",
+   "link_to": "Pag-IBIG MCRF",
+   "report_ref_doctype": "Employee",
+   "stats_filter": "[]",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "PH Payroll Settings",
+   "link_to": "PH Payroll Settings",
    "type": "DocType"
   }
  ],

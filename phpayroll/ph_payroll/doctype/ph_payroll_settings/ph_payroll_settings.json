@@ -1,0 +1,197 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:company",
+ "creation": "2026-09-04 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "engine_section",
+  "computation_engine",
+  "freeze_payroll_voucher",
+  "count_on_duty_as_official_business",
+  "default_salary_structure",
+  "column_break_ids",
+  "sss_employer_no",
+  "philhealth_pen",
+  "pagibig_employer_id",
+  "bir_section",
+  "tin",
+  "tin_branch_code",
+  "rdo_code",
+  "column_break_bir",
+  "registered_name",
+  "registered_address",
+  "zip_code",
+  "signatory_section",
+  "signatory_name",
+  "signatory_title",
+  "thirteenth_month_cap"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "engine_section",
+   "fieldtype": "Section Break",
+   "label": "Payroll Computation"
+  },
+  {
+   "default": "PH Payroll Voucher",
+   "description": "Legacy companies keep Payroll Voucher (existing Time In/Out and vouchers stay valid). Switch to Frappe HR Salary Slip when ready; that is the target engine. Existing vouchers are never deleted.",
+   "fieldname": "computation_engine",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Payroll Computation Engine",
+   "options": "PH Payroll Voucher\nFrappe HR Salary Slip",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "Set automatically when the engine is Frappe HR Salary Slip. Blocks new Payroll Vouchers; historical vouchers remain.",
+   "fieldname": "freeze_payroll_voucher",
+   "fieldtype": "Check",
+   "label": "Freeze Payroll Voucher",
+   "read_only": 1
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.computation_engine=='Frappe HR Salary Slip'",
+   "description": "HRMS has no Official Business DocType. When enabled, submitted Attendance Request with reason On Duty (or Work From Home) is paid like a full Official Business day (half day = 0.5). Keep using PH Official Business for legacy days.",
+   "fieldname": "count_on_duty_as_official_business",
+   "fieldtype": "Check",
+   "label": "Pay Attendance Request (On Duty) as Official Business"
+  },
+  {
+   "fieldname": "default_salary_structure",
+   "fieldtype": "Link",
+   "label": "Default Salary Structure",
+   "options": "Salary Structure"
+  },
+  {
+   "fieldname": "column_break_ids",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sss_employer_no",
+   "fieldtype": "Data",
+   "label": "SSS Employer ID"
+  },
+  {
+   "fieldname": "philhealth_pen",
+   "fieldtype": "Data",
+   "label": "PhilHealth PEN"
+  },
+  {
+   "fieldname": "pagibig_employer_id",
+   "fieldtype": "Data",
+   "label": "Pag-IBIG Employer ID"
+  },
+  {
+   "fieldname": "bir_section",
+   "fieldtype": "Section Break",
+   "label": "BIR (used when phtax BIR CAS Settings is missing)"
+  },
+  {
+   "fieldname": "tin",
+   "fieldtype": "Data",
+   "label": "TIN"
+  },
+  {
+   "default": "000",
+   "fieldname": "tin_branch_code",
+   "fieldtype": "Data",
+   "label": "TIN Branch Code"
+  },
+  {
+   "fieldname": "rdo_code",
+   "fieldtype": "Data",
+   "label": "RDO Code"
+  },
+  {
+   "fieldname": "column_break_bir",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "registered_name",
+   "fieldtype": "Data",
+   "label": "Registered Name"
+  },
+  {
+   "fieldname": "registered_address",
+   "fieldtype": "Small Text",
+   "label": "Registered Address"
+  },
+  {
+   "fieldname": "zip_code",
+   "fieldtype": "Data",
+   "label": "ZIP Code"
+  },
+  {
+   "fieldname": "signatory_section",
+   "fieldtype": "Section Break",
+   "label": "Signatory"
+  },
+  {
+   "fieldname": "signatory_name",
+   "fieldtype": "Data",
+   "label": "Signatory Name"
+  },
+  {
+   "fieldname": "signatory_title",
+   "fieldtype": "Data",
+   "label": "Signatory Title"
+  },
+  {
+   "default": "90000",
+   "fieldname": "thirteenth_month_cap",
+   "fieldtype": "Currency",
+   "label": "13th Month Tax-Exempt Cap"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-04 14:20:00.000000",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "PH Payroll Settings",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
