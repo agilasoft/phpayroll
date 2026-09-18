@@ -7,10 +7,13 @@
  "engine": "InnoDB",
  "field_order": [
   "employee",
+  "employee_name",
   "date",
+  "column_break_days",
+  "number_of_days",
+  "type",
   "branch",
   "reliever",
-  "type",
   "reason",
   "amended_from"
  ],
@@ -18,13 +21,39 @@
   {
    "fieldname": "employee",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Employee",
-   "options": "Employee"
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee Name",
+   "read_only": 1
   },
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_days",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Paid leave fraction for this date (e.g. 1 full day, 0.5 half day). Payroll uses this like Official Business.",
+   "fieldname": "number_of_days",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Number of Days",
+   "precision": "2",
+   "reqd": 1
   },
   {
    "fieldname": "branch",
@@ -40,9 +69,11 @@
   },
   {
    "fieldname": "type",
-   "fieldtype": "Select",
-   "label": "Type",
-   "options": "Sick\nVacation\nMagna Carta"
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Leave Type",
+   "options": "Leave Type",
+   "reqd": 1
   },
   {
    "fieldname": "reason",

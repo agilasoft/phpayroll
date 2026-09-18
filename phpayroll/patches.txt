@@ -1,4 +1,7 @@
+phpayroll.patches.set_payroll_voucher_run_type_default
 phpayroll.patches.v1_0.remove_hr_workspaces
 phpayroll.patches.v1_0.set_computation_engine
 phpayroll.patches.v1_0.fix_statutory_report_links
 phpayroll.patches.v1_0.fix_report_section_indent
+phpayroll.patches.ensure_leave_types
+phpayroll.patches.backfill_payroll_holiday_rates

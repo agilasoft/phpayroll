@@ -9,6 +9,7 @@
   "basic_pay",
   "overtime_pay",
   "holiday_pay",
+  "night_diff_pay",
   "cash_advance",
   "time_in",
   "time_out",
@@ -54,6 +55,12 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Holiday Pay"
+  },
+  {
+   "fieldname": "night_diff_pay",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Night Differential Pay"
   },
   {
    "fieldname": "time_in",

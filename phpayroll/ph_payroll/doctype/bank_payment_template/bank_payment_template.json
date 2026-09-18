@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "autoname": "field:template_code",
+ "creation": "2026-04-09 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "template_code",
+  "bank_name",
+  "delimiter",
+  "include_header",
+  "column_map"
+ ],
+ "fields": [
+  {
+   "fieldname": "template_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Template Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "bank_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Bank Name"
+  },
+  {
+   "default": ",",
+   "description": "CSV field delimiter (e.g. , or \\t).",
+   "fieldname": "delimiter",
+   "fieldtype": "Data",
+   "label": "Delimiter"
+  },
+  {
+   "default": "1",
+   "fieldname": "include_header",
+   "fieldtype": "Check",
+   "label": "Include Header Row"
+  },
+  {
+   "description": "JSON array of column keys per row, e.g. [\"employee\",\"employee_name\",\"net_pay\"]. Allowed: employee, employee_name, branch, net_pay, voucher, date_to, taxable_income, tax.",
+   "fieldname": "column_map",
+   "fieldtype": "Small Text",
+   "label": "Column Map (JSON)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-04-09 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "PH Payroll",
+ "name": "Bank Payment Template",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

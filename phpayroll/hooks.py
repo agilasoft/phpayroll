@@ -41,6 +41,12 @@ doc_events = {
 	},
 }
 
+scheduler_events = {
+	"monthly": [
+		"phpayroll.tasks.grant_scheduled_leave_accrual",
+	],
+}
+
 # Company → Delete Transactions: keep payroll setup; operational slips/entries stay deletable.
 company_data_to_be_ignored = [
 	"PH Payroll Settings",
