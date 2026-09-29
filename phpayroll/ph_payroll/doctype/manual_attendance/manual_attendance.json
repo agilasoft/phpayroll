@@ -109,7 +109,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Belizzo Staff",
+   "role": "Payroll Staff",
    "share": 1,
    "write": 1
   },
@@ -122,7 +122,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Belizzo Supervisor",
+   "role": "Payroll Supervisor",
    "share": 1,
    "submit": 1,
    "write": 1
