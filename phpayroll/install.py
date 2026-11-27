@@ -4,8 +4,23 @@
 import frappe
 
 
+OPTIONAL_APPS = (
+	("hrms", "Employee and Salary Slip"),
+	("pdffiller", "fillable statutory PDFs"),
+)
+
+
 def after_install():
+	_note_optional_apps()
 	after_migrate()
+
+
+def _note_optional_apps():
+	installed = set(frappe.get_installed_apps())
+	notes = [f"install {app} for {purpose}" for app, purpose in OPTIONAL_APPS if app not in installed]
+	if not notes:
+		return
+	print("PH Payroll installed. Next: " + "; ".join(notes) + ". Then run bench migrate.")
 
 
 def after_migrate():
