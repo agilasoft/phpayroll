@@ -11,7 +11,10 @@ app_color = "grey"
 app_email = "info@agilasoft.com"
 app_license = "MIT"
 
-required_apps = ["frappe", "erpnext", "hrms", "pdffiller"]
+# Frappe installs each required app by importing its hooks. hrms (Employee,
+# Salary Slip) and pdffiller (fillable statutory PDFs) are optional and turn
+# on after those apps are installed and the site is migrated.
+required_apps = ["frappe", "erpnext"]
 
 app_include_js = [
 	"/assets/phpayroll/js/query_report_guard.js",
